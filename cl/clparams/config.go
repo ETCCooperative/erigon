@@ -770,6 +770,12 @@ func GetCheckpointSyncEndpoint(net NetworkType) string {
 	if !ok {
 		return ""
 	}
+	if len(checkpoints) == 0 {
+		return ""
+	}
+	if len(checkpoints) == 1 {
+		return checkpoints[0]
+	}
 	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(checkpoints)-1)))
 	if err != nil {
 		panic(err)
