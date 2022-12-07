@@ -84,9 +84,9 @@ type Genesis struct {
 type GenesisAlloc map[common.Address]GenesisAccount
 
 type AuthorityRoundSeal struct {
-	/// Seal step.
+	// / Seal step.
 	Step uint64 `json:"step"`
-	/// Seal signature.
+	// / Seal signature.
 	Signature common.Hash `json:"signature"`
 }
 
@@ -330,7 +330,7 @@ func sortedAllocKeys(m GenesisAlloc) []string {
 // ToBlock creates the genesis block and writes state of a genesis specification
 // to the given database (or discards it if nil).
 func (g *Genesis) ToBlock() (*types.Block, *state.IntraBlockState, error) {
-	_ = g.Alloc //nil-check
+	_ = g.Alloc // nil-check
 
 	head := &types.Header{
 		Number:     new(big.Int).SetUint64(g.Number),
@@ -639,6 +639,24 @@ func DefaultGoerliGenesisBlock() *Genesis {
 	}
 }
 
+// DefaultShandongGenesisBlock returns the Shandong network genesis block.
+// Source: https://github.com/hyperledger/besu/blob/main/config/src/main/resources/shandong.json
+func DefaultShandongGenesisBlock() *Genesis {
+	return &Genesis{
+		Config:    params.ShandongChainConfig,
+		Timestamp: 1667641735,
+		// ExtraData:  nil,
+		GasLimit:   0x400000,
+		BaseFee:    big.NewInt(1000000000),
+		Difficulty: big.NewInt(1),
+		Nonce:      0x1234,
+		Alloc:      readPrealloc("allocs/shandong.json"),
+		// Coinbase: 0x0
+		// Mixhash: 0x0
+		// ParentHash: 0x0
+	}
+}
+
 func DefaultSokolGenesisBlock() *Genesis {
 	/*
 		header rlp: f9020da00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0fad4af258fd11939fae0c6c6eec9d340b1caac0b0196fd9a1bc3f489c5bf00b3a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200008083663be080808080b8410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -820,6 +838,8 @@ func DefaultGenesisBlockByChainName(chain string) *Genesis {
 		return DefaultSepoliaGenesisBlock()
 	case networkname.RopstenChainName:
 		return DefaultRopstenGenesisBlock()
+	case networkname.ShandongChainName:
+		return DefaultShandongGenesisBlock()
 	case networkname.RinkebyChainName:
 		return DefaultRinkebyGenesisBlock()
 	case networkname.GoerliChainName:

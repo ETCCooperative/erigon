@@ -75,6 +75,7 @@ var (
 	BorDevnetGenesisHash  = common.HexToHash("0x5a06b25b0c6530708ea0b98a3409290e39dce6be7f558493aeb6e4b99a172a87")
 	GnosisGenesisHash     = common.HexToHash("0x4f1dd23188aab3a76b463e4af801b52b1248ef073c648cbdc4c9333d3da79756")
 	ChiadoGenesisHash     = common.HexToHash("0xada44fd8d2ecab8b08f256af07ad3e777f17fb434f8f8e678b312f576212ba9a")
+	ShandongGenesisHash   = common.HexToHash("0x314dd74a67fa1dbd85498d42871b1bb6a5bb23a9dbcc07848311b8e5a71cab38") // Source: https://explorer.shandong.ethdevops.io/block/0/transactions
 )
 
 var (
@@ -82,10 +83,11 @@ var (
 )
 
 var (
-	SokolGenesisStateRoot   = common.HexToHash("0xfad4af258fd11939fae0c6c6eec9d340b1caac0b0196fd9a1bc3f489c5bf00b3")
-	FermionGenesisStateRoot = common.HexToHash("0x08982dc16236c51b6d9aff8b76cd0faa7067eb55eba62395d5a82649d8fb73c4")
-	GnosisGenesisStateRoot  = common.HexToHash("0x40cf4430ecaa733787d1a65154a3b9efb560c95d9e324a23b97f0609b539133b")
-	ChiadoGenesisStateRoot  = common.HexToHash("0x9ec3eaf4e6188dfbdd6ade76eaa88289b57c63c9a2cde8d35291d5a29e143d31")
+	SokolGenesisStateRoot    = common.HexToHash("0xfad4af258fd11939fae0c6c6eec9d340b1caac0b0196fd9a1bc3f489c5bf00b3")
+	FermionGenesisStateRoot  = common.HexToHash("0x08982dc16236c51b6d9aff8b76cd0faa7067eb55eba62395d5a82649d8fb73c4")
+	GnosisGenesisStateRoot   = common.HexToHash("0x40cf4430ecaa733787d1a65154a3b9efb560c95d9e324a23b97f0609b539133b")
+	ChiadoGenesisStateRoot   = common.HexToHash("0x9ec3eaf4e6188dfbdd6ade76eaa88289b57c63c9a2cde8d35291d5a29e143d31")
+	ShandongGenesisStateRoot = common.HexToHash("0xe794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e")
 )
 
 var (
@@ -113,6 +115,8 @@ var (
 	SokolChainConfig = readChainSpec("chainspecs/sokol.json")
 
 	FermionChainConfig = readChainSpec("chainspecs/fermion.json")
+
+	ShandongChainConfig = readChainSpec("chainspecs/shandong.json")
 
 	// AllProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the main net protocol.
@@ -899,6 +903,8 @@ func ChainConfigByChainName(chain string) *ChainConfig {
 		return SepoliaChainConfig
 	case networkname.RopstenChainName:
 		return RopstenChainConfig
+	case networkname.ShandongChainName:
+		return ShandongChainConfig
 	case networkname.RinkebyChainName:
 		return RinkebyChainConfig
 	case networkname.GoerliChainName:
@@ -936,6 +942,8 @@ func GenesisHashByChainName(chain string) *common.Hash {
 		return &SepoliaGenesisHash
 	case networkname.RopstenChainName:
 		return &RopstenGenesisHash
+	case networkname.ShandongChainName:
+		return &ShandongGenesisHash
 	case networkname.RinkebyChainName:
 		return &RinkebyGenesisHash
 	case networkname.GoerliChainName:
@@ -973,6 +981,8 @@ func ChainConfigByGenesisHash(genesisHash common.Hash) *ChainConfig {
 		return SepoliaChainConfig
 	case genesisHash == RopstenGenesisHash:
 		return RopstenChainConfig
+	case genesisHash == ShandongGenesisHash:
+		return ShandongChainConfig
 	case genesisHash == RinkebyGenesisHash:
 		return RinkebyChainConfig
 	case genesisHash == GoerliGenesisHash:

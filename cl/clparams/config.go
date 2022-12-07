@@ -15,6 +15,7 @@ package clparams
 
 import (
 	"crypto/rand"
+	"embed"
 	"fmt"
 	"math"
 	"math/big"
@@ -23,14 +24,19 @@ import (
 	"github.com/ledgerwatch/erigon/cl/utils"
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/params/networkname"
+	"gopkg.in/yaml.v3"
 )
+
+//go:embed beacon_configs
+var beaconConfigFiles embed.FS
 
 type NetworkType int
 
 const (
-	MainnetNetwork NetworkType = 1
-	GoerliNetwork  NetworkType = 5
-	SepoliaNetwork NetworkType = 11155111
+	MainnetNetwork  NetworkType = 1
+	GoerliNetwork   NetworkType = 5
+	SepoliaNetwork  NetworkType = 11155111
+	ShandongNetwork NetworkType = 1337903
 )
 
 const (
@@ -76,6 +82,13 @@ var (
 		"enr:-KG4QE5OIg5ThTjkzrlVF32WT_-XT14WeJtIz2zoTqLLjQhYAmJlnk4ItSoH41_2x0RX0wTFIe5GgjRzU2u7Q1fN4vADhGV0aDKQqP7o7pAAAHAyAAAAAAAAAIJpZIJ2NIJpcISlFsStiXNlY3AyNTZrMaEC-Rrd_bBZwhKpXzFCrStKp1q_HmGOewxY3KwM8ofAj_ODdGNwgiMog3VkcIIjKA",
 		// Teku boot node
 		"enr:-Ly4QFoZTWR8ulxGVsWydTNGdwEESueIdj-wB6UmmjUcm-AOPxnQi7wprzwcdo7-1jBW_JxELlUKJdJES8TDsbl1EdNlh2F0dG5ldHOI__78_v2bsV-EZXRoMpA2-lATkAAAcf__________gmlkgnY0gmlwhBLYJjGJc2VjcDI1NmsxoQI0gujXac9rMAb48NtMqtSTyHIeNYlpjkbYpWJw46PmYYhzeW5jbmV0cw-DdGNwgiMog3VkcIIjKA",
+	}
+
+	ShandongBootstrapNodes = []string{
+		"enr:-LK4QHkdCND7lcPwqP0oP8EvjtyEIEwlufo4Q2WLU7lfnE7wXaiPFYqrxG2ve0yjwobsv-JivPPnPgM5FXF9_AUe2JIGh2F0dG5ldHOIAAAAAAAAAACEZXRoMpA6j89cITN5Av__________gmlkgnY0gmlwhC5lfi2Jc2VjcDI1NmsxoQO2iyKHl53XEZpkmqwzrNde8tJtHBG1juKX6GQ8maqYAIN0Y3CCIyiDdWRwgiMo",
+		"enr:-LK4QFUme0A5wcehaAVkgo3wILst__VwT-CS90IAHRf81EEDewxXYOY3tGH0kYg8jm3dRap-ebt9W2YpYxK4RhICoc4Gh2F0dG5ldHOIAAAAAAAAAACEZXRoMpA6j89cITN5Av__________gmlkgnY0gmlwhLKAy_OJc2VjcDI1NmsxoQIioMWqai_HMbtalAFqTa97lLgjfA_D9NBt9BenWmKjDIN0Y3CCIyiDdWRwgiMo",
+		"enr:-LK4QClQvVrrQ9Jm0mOUX8I9vu-anp-dgD9FSiW8Ep0uR6pEZh4t8iMljhXnE2q1UjL2rHAJeIxlrdbwcn1wjeLaamwGh2F0dG5ldHOIAAAAAAAAAACEZXRoMpA6j89cITN5Av__________gmlkgnY0gmlwhI5draqJc2VjcDI1NmsxoQKZ1U-C4IWnkiu6EvbIls9iRazxW5RZej-htHgwNf3Ef4N0Y3CCIyiDdWRwgiMo",
+		"enr:-LK4QGMlUKIzZVYqB2uIsizLIaKrPlHrGyZFCg5ond0soaGGOdsV9oR_50PAnOTE_6GZN6p_uqqkvGtnXPyhKEiizbYGh2F0dG5ldHOIAAAAAAAAAACEZXRoMpA6j89cITN5Av__________gmlkgnY0gmlwhKRcrjiJc2VjcDI1NmsxoQIO0t2j7TMxczat4kjQJaFikgg3mNCMQmgUX99zotTV5YN0Y3CCIyiDdWRwgiMo",
 	}
 )
 
@@ -168,6 +181,26 @@ var NetworkConfigs map[NetworkType]NetworkConfig = map[NetworkType]NetworkConfig
 		ContractDeploymentBlock:         4367322,
 		BootNodes:                       GoerliBootstrapNodes,
 	},
+
+	ShandongNetwork: {
+		GossipMaxSize:                   1 << 20, // 1 MiB
+		GossipMaxSizeBellatrix:          10485760,
+		MaxChunkSize:                    1 << 20, // 1 MiB
+		AttestationSubnetCount:          64,
+		AttestationPropagationSlotRange: 32,
+		MaxRequestBlocks:                1 << 10, // 1024
+		TtfbTimeout:                     ReqTimeout,
+		RespTimeout:                     RespTimeout,
+		MaximumGossipClockDisparity:     500 * time.Millisecond,
+		MessageDomainInvalidSnappy:      [4]byte{00, 00, 00, 00},
+		MessageDomainValidSnappy:        [4]byte{01, 00, 00, 00},
+		Eth2key:                         "eth2",
+		AttSubnetKey:                    "attnets",
+		SyncCommsSubnetKey:              "syncnets",
+		MinimumPeersInSubnetSearch:      20,
+		ContractDeploymentBlock:         0,
+		BootNodes:                       ShandongBootstrapNodes,
+	},
 }
 
 var GenesisConfigs map[NetworkType]GenesisConfig = map[NetworkType]GenesisConfig{
@@ -182,6 +215,10 @@ var GenesisConfigs map[NetworkType]GenesisConfig = map[NetworkType]GenesisConfig
 	GoerliNetwork: {
 		GenesisValidatorRoot: common.HexToHash("043db0d9a83813551ee2f33450d23797757d430911a9320530ad8a0eabc43efb"),
 		GenesisTime:          1616508000,
+	},
+	ShandongNetwork: {
+		GenesisValidatorRoot: common.HexToHash("0xe794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e"),
+		GenesisTime:          1667641735,
 	},
 }
 
@@ -599,7 +636,7 @@ var mainnetBeaconConfig BeaconChainConfig = BeaconChainConfig{
 	EpochsPerSyncCommitteePeriod: 256,
 
 	// Updated penalty values.
-	InactivityPenaltyQuotientAltair:         3 * 1 << 24, //50331648
+	InactivityPenaltyQuotientAltair:         3 * 1 << 24, // 50331648
 	MinSlashingPenaltyQuotientAltair:        64,
 	ProportionalSlashingMultiplierAltair:    2,
 	MinSlashingPenaltyQuotientBellatrix:     32,
@@ -668,11 +705,36 @@ func goerliConfig() BeaconChainConfig {
 	return cfg
 }
 
+func shandongConfig() BeaconChainConfig {
+	cfg := mainnetBeaconConfig
+	f, err := beaconConfigFiles.Open("beacon_configs/shandong.yml")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		panic(err)
+	}
+	// #GENESIS_FORK_VERSION: 0x01337902 # FIXME(IA)
+	cfg.GenesisForkVersion = []byte{0x01, 0x33, 0x79, 0x02}
+	// #ALTAIR_FORK_VERSION: 0x11337902 # FIXME(IA)
+	cfg.AltairForkVersion = []byte{0x11, 0x33, 0x79, 0x02}
+	// #BELLATRIX_FORK_VERSION: 0x21337902 # FIXME(IA)
+	cfg.BellatrixForkVersion = []byte{0x21, 0x33, 0x79, 0x02}
+	// #SHARDING_FORK_VERSION: 0x31337902 # FIXME(IA)
+	cfg.ShardingForkVersion = []byte{0x31, 0x33, 0x79, 0x02}
+	cfg.InitializeForkSchedule()
+	return cfg
+}
+
 // Beacon configs
 var BeaconConfigs map[NetworkType]BeaconChainConfig = map[NetworkType]BeaconChainConfig{
-	MainnetNetwork: mainnetConfig(),
-	SepoliaNetwork: sepoliaConfig(),
-	GoerliNetwork:  goerliConfig(),
+	MainnetNetwork:  mainnetConfig(),
+	SepoliaNetwork:  sepoliaConfig(),
+	GoerliNetwork:   goerliConfig(),
+	ShandongNetwork: shandongConfig(),
 }
 
 func GetConfigsByNetwork(net NetworkType) (*GenesisConfig, *NetworkConfig, *BeaconChainConfig) {
@@ -693,6 +755,9 @@ func GetConfigsByNetworkName(net string) (*GenesisConfig, *NetworkConfig, *Beaco
 	case networkname.SepoliaChainName:
 		genesisCfg, networkCfg, beaconCfg := GetConfigsByNetwork(SepoliaNetwork)
 		return genesisCfg, networkCfg, beaconCfg, SepoliaNetwork, nil
+	case networkname.ShandongChainName:
+		genesisCfg, networkCfg, beaconCfg := GetConfigsByNetwork(ShandongNetwork)
+		return genesisCfg, networkCfg, beaconCfg, ShandongNetwork, nil
 	default:
 		return nil, nil, nil, MainnetNetwork, fmt.Errorf("chain not found")
 	}
@@ -714,5 +779,5 @@ func GetCheckpointSyncEndpoint(net NetworkType) string {
 // 5 is Goerli Testnet
 // 11155111 is Sepolia Testnet
 func Supported(id uint64) bool {
-	return id == 1 || id == 5 || id == 11155111
+	return id == 1 || id == 5 || id == 11155111 || id == 1337903
 }
