@@ -1,0 +1,23 @@
+{
+  "ChainName": "classic",
+  "chainId": 61,
+  "consensus": "ethash",
+  "homesteadBlock": 1150000,
+  "daoForkBlock": 1920000,
+  "daoForkSupport": false,
+  "eip150Block": 2500000,
+  "eip150Hash": "0xca12c63534f565899681965528d536c52cb05b7c48e269c2a6cb77ad864d878a",
+  "eip155Block": 8772000,
+  "byzantiumBlock": 8772000,
+  "constantinopleBlock": 9573000,
+  "petersburgBlock": 9573000,
+  "istanbulBlock": 10500839,
+  "muirGlacierBlock": null,
+  "berlinBlock": 13189133,
+  "londonBlock": null,
+  "arrowGlacierBlock": null,
+  "grayGlacierBlock": null,
+  "terminalTotalDifficulty": null,
+  "terminalTotalDifficultyPassed": false,
+  "ethash": {}
+}

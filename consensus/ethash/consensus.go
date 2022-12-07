@@ -294,6 +294,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time, pa
 func CalcDifficulty(config *params.ChainConfig, time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash common.Hash) *big.Int {
 	next := parentNumber + 1
 	switch {
+	case config.IsClassic():
+		return CalcDifficulty_Classic(config, time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
 	case config.IsGrayGlacier(next):
 		return calcDifficultyEip5133(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
 	case config.IsArrowGlacier(next):
@@ -516,8 +518,7 @@ func (ethash *Ethash) verifySeal(header *types.Header, fulldag bool) error { //n
 	// If slow-but-light PoW verification was requested (or DAG not yet ready), use an ethash cache
 	if !fulldag {
 		cache := ethash.cache(number)
-
-		size := datasetSize(number)
+		size := datasetSize(cache.epoch)
 		if ethash.config.PowMode == ModeTest {
 			size = 32 * 1024
 		}
@@ -617,11 +618,15 @@ func (ethash *Ethash) IsServiceTransaction(sender common.Address, syscall consen
 func AccumulateRewards(config *params.ChainConfig, header *types.Header, uncles []*types.Header) (uint256.Int, []uint256.Int) {
 	// Select the correct block reward based on chain progression
 	blockReward := FrontierBlockReward
+	if config.IsClassic() && header.Number.Cmp(config.ECIP1017Block()) >= 0 {
+		return ecip1017BlockReward(header, uncles)
+	} else {
 	if config.IsByzantium(header.Number.Uint64()) {
 		blockReward = ByzantiumBlockReward
 	}
 	if config.IsConstantinople(header.Number.Uint64()) {
 		blockReward = ConstantinopleBlockReward
+		}
 	}
 	// Accumulate the rewards for the miner and any included uncles
 	uncleRewards := []uint256.Int{}

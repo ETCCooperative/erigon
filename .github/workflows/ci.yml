@@ -5,11 +5,13 @@ on:
       - devel
       - alpha
       - stable
+      - devel+classic
   pull_request:
     branches:
       - devel
       - alpha
       - stable
+      - devel+classic
     types:
       - opened
       - reopened

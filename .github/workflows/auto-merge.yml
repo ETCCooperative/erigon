@@ -1,0 +1,55 @@
+name: Nightly AutoMerge
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: devel+classic
+          submodules: false
+          fetch-depth: 0
+
+      - name: Push 'upstream/devel:devel' (with --force)
+        env:
+          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+        run: |
+          git remote add upstream https://github.com/ledgerwatch/erigon.git
+          git fetch upstream
+          git remote set-url origin https://meowsbits:${MY_PAT}@github.com/${GITHUB_REPOSITORY}.git
+          git push origin upstream/devel:devel --force
+
+      - name: Merge branch 'devel' into 'devel+classic'
+        run: |
+          git config --global user.email "b5c6@protonmail.com"
+          git config --global user.name "meowsbits"
+          merge_status=$(git merge upstream/devel --no-edit)
+          if [[ $merge_status == 1 ]]; then
+            echo "Merge conflict detected"
+            exit 1
+          fi
+          exit 0
+
+      - name: Push changes if successful
+        if: success()
+        env:
+          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+        run: |
+          git config --global user.email "b5c6@protonmail.com"
+          git config --global user.name "meowsbits"
+          git remote set-url origin https://meowsbits:${MY_PAT}@github.com/${GITHUB_REPOSITORY}.git
+          git push origin devel+classic
+
+      - name: Create issue if failed
+        if: failure()
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/automerge-issue-on-failure.md
+
+          

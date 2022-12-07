@@ -56,7 +56,7 @@ func MakeSigner(config *params.ChainConfig, blockNumber uint64) *Signer {
 		signer.accesslist = true
 		signer.chainID.Set(&chainId)
 		signer.chainIDMul.Mul(&chainId, u256.Num2)
-	case config.IsSpuriousDragon(blockNumber):
+	case config.IsProtectedSigner(blockNumber):
 		signer.protected = true
 		signer.chainID.Set(&chainId)
 		signer.chainIDMul.Mul(&chainId, u256.Num2)

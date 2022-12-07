@@ -1,8 +1,9 @@
 package ethconsensusconfig
 
 import (
-	"github.com/ledgerwatch/erigon-lib/kv"
 	"path/filepath"
+
+	"github.com/ledgerwatch/erigon-lib/kv"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ledgerwatch/erigon/consensus"
@@ -35,6 +36,11 @@ func CreateConsensusEngine(chainConfig *params.ChainConfig, logger log.Logger, c
 			log.Warn("Ethash used in shared mode")
 			eng = ethash.NewShared()
 		default:
+			var ecip1099 *uint64
+			if chainConfig.IsClassic() {
+				u := params.ECIP1099Block_Classic.Uint64()
+				ecip1099 = &u
+			}
 			eng = ethash.New(ethash.Config{
 				CachesInMem:      consensusCfg.CachesInMem,
 				CachesLockMmap:   consensusCfg.CachesLockMmap,
@@ -42,6 +48,7 @@ func CreateConsensusEngine(chainConfig *params.ChainConfig, logger log.Logger, c
 				DatasetsInMem:    consensusCfg.DatasetsInMem,
 				DatasetsOnDisk:   consensusCfg.DatasetsOnDisk,
 				DatasetsLockMmap: consensusCfg.DatasetsLockMmap,
+				ECIP1099Block:    ecip1099,
 			}, notify, noverify)
 		}
 	case *params.ConsensusSnapshotConfig:

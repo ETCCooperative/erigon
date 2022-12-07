@@ -1088,6 +1088,8 @@ func DataDirForNetwork(datadir string, network string) string {
 		return networkDataDirCheckingLegacy(datadir, "gnosis")
 	case networkname.ChiadoChainName:
 		return networkDataDirCheckingLegacy(datadir, "chiado")
+	case networkname.ClassicChainName:
+		return networkDataDirCheckingLegacy(datadir, "classic")
 
 	default:
 		return datadir
@@ -1524,6 +1526,18 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 			cfg.NetworkID = params.NetworkIDByChainName(chain)
 		}
 		SetDNSDiscoveryDefaults(cfg, *genesisHash)
+	case networkname.ClassicChainName:
+		log.Warn("SetEthConfig", "chain", chain)
+		cfg.Genesis = core.DefaultGenesisBlockByChainName(networkname.ClassicChainName)
+
+		if !ctx.IsSet(NetworkIdFlag.Name) {
+			cfg.NetworkID = params.NetworkIDByChainName(chain)
+		}
+
+		cfg.EthDiscoveryURLs = []string{params.ClassicDNS}
+
+		u := params.ECIP1099Block_Classic.Uint64()
+		cfg.Ethash.ECIP1099Block = &u
 	case "":
 		if cfg.NetworkID == 1 {
 			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
@@ -1562,6 +1576,7 @@ func SetDNSDiscoveryDefaults(cfg *ethconfig.Config, genesis common.Hash) {
 	if cfg.EthDiscoveryURLs != nil {
 		return // already set through flags/config
 	}
+
 	protocol := "all"
 	if url := params.KnownDNSNetwork(genesis, protocol); url != "" {
 		cfg.EthDiscoveryURLs = []string{url}

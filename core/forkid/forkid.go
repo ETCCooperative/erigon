@@ -243,11 +243,23 @@ func GatherForks(config *params.ChainConfig) []uint64 {
 		if field.Type != reflect.TypeOf(new(big.Int)) {
 			continue
 		}
+		if config.IsClassic() && strings.Contains(field.Name, "DAO") {
+			continue
+		}
 		// Extract the fork rule block number and aggregate it
 		rule := conf.Field(i).Interface().(*big.Int)
 		if rule != nil {
 			forks = append(forks, rule.Uint64())
 		}
+	}
+	if config.IsClassic() {
+		forks = append(forks,
+			3_000_000,  // Spurious Dragon. ETC implements only "half" of the EIPs for this fork. Later half of EIPs happen in ETC's Byzantium=XXX.
+			5_000_000,  // ECIP1017 Monetary Policy
+			5_900_000,  // ECIP1010 Difficulty Bomb Disposal
+			11_700_000, // ECIP1099: Etchash
+			14_525_000, // Partial London; only "half" of EIPs are adopted (not EIP-1559).
+		)
 	}
 	// Sort the fork block numbers to permit chronological XOR
 	slices.Sort(forks)

@@ -388,6 +388,10 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		consensusConfig = &config.Bor
 	} else {
 		consensusConfig = &config.Ethash
+		if chainConfig.IsClassic() {
+			ecip1099Block := params.ECIP1099Block_Classic.Uint64()
+			config.Ethash.ECIP1099Block = &ecip1099Block
+		}
 	}
 	backend.engine = ethconsensusconfig.CreateConsensusEngine(chainConfig, logger, consensusConfig, config.Miner.Notify, config.Miner.Noverify, config.HeimdallURL, config.WithoutHeimdall, stack.DataDir(), allSnapshots, false /* readonly */, backend.chainDB)
 	backend.forkValidator = engineapi.NewForkValidator(currentBlockNumber, inMemoryExecution, tmpdir)

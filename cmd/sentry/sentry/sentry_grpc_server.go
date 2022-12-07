@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -892,6 +893,17 @@ func (ss *GrpcServer) SetStatus(ctx context.Context, statusData *proto_sentry.St
 			if len(ss.discoveryDNS) == 0 {
 				if url := params.KnownDNSNetwork(genesisHash, "all"); url != "" {
 					ss.discoveryDNS = []string{url}
+				}
+				if common.BytesToHash(genesisHash[:]) == params.MainnetGenesisHash {
+					// Byzantium block is expected to be unique compared to the ETH config.
+					for _, f := range statusData.ForkData.Forks {
+						if f == params.ClassicChainConfig.ByzantiumBlock.Uint64() {
+							ss.discoveryDNS = []string{params.ClassicDNS}
+							logDNS := strings.Join(ss.discoveryDNS, ",")
+							log.Info("Using classic DNS discovery", "url", logDNS)
+							break
+						}
+					}
 				}
 			}
 			ss.Protocol.DialCandidates, err = setupDiscovery(ss.discoveryDNS)

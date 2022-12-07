@@ -282,6 +282,8 @@ func BootnodeURLsOfChain(chain string) []string {
 		return BorMainnetBootnodes
 	case networkname.GnosisChainName:
 		return GnosisBootnodes
+	case networkname.ClassicChainName:
+		return ClassicBootnodes
 	case networkname.ChiadoChainName:
 		return ChiadoBootnodes
 	default:

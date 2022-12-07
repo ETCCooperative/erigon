@@ -347,7 +347,7 @@ LOOP:
 
 		// Check whether the txn is replay protected. If we're not in the EIP155 (Spurious Dragon) hf
 		// phase, start ignoring the sender until we do.
-		if txn.Protected() && !chainConfig.IsSpuriousDragon(header.Number.Uint64()) {
+		if txn.Protected() && !chainConfig.IsProtectedSigner(header.Number.Uint64()) {
 			log.Debug(fmt.Sprintf("[%s] Ignoring replay protected transaction", logPrefix), "hash", txn.Hash(), "eip155", chainConfig.SpuriousDragonBlock)
 
 			txs.Pop()

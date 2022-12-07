@@ -855,6 +855,9 @@ type Rules struct {
 	IsNano, IsMoran, IsGibbs                                bool
 	IsEip1559FeeCollector                                   bool
 	IsParlia, IsStarknet, IsAura                            bool
+
+	// IsDieHard and IsMystique are Ethereum Classic-specific fork switches
+	IsDieHard, IsMystique bool
 }
 
 // Rules ensures c's ChainID is not nil.
@@ -881,6 +884,9 @@ func (c *ChainConfig) Rules(num uint64, time uint64) *Rules {
 		IsEip1559FeeCollector: c.IsEip1559FeeCollector(num),
 		IsParlia:              c.Parlia != nil,
 		IsAura:                c.Aura != nil,
+
+		IsDieHard:  c.IsClassic() && isForked(classicEIP160, num),
+		IsMystique: c.IsClassic() && isForked(classicMystiqueBlock, num),
 	}
 }
 
@@ -916,6 +922,8 @@ func ChainConfigByChainName(chain string) *ChainConfig {
 		return GnosisChainConfig
 	case networkname.ChiadoChainName:
 		return ChiadoChainConfig
+	case networkname.ClassicChainName:
+		return ClassicChainConfig
 	default:
 		return nil
 	}
@@ -923,7 +931,7 @@ func ChainConfigByChainName(chain string) *ChainConfig {
 
 func GenesisHashByChainName(chain string) *common.Hash {
 	switch chain {
-	case networkname.MainnetChainName:
+	case networkname.MainnetChainName, networkname.ClassicChainName:
 		return &MainnetGenesisHash
 	case networkname.SepoliaChainName:
 		return &SepoliaGenesisHash
@@ -999,6 +1007,8 @@ func NetworkIDByChainName(chain string) uint64 {
 		return 97
 	case networkname.DevChainName:
 		return 1337
+	case networkname.ClassicChainName:
+		return 1
 	default:
 		config := ChainConfigByChainName(chain)
 		if config == nil {

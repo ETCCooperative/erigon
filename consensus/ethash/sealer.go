@@ -228,7 +228,9 @@ func (s *remoteSealer) loop() {
 func (s *remoteSealer) makeWork(block *types.Block) {
 	hash := s.ethash.SealHash(block.Header())
 	s.currentWork[0] = hash.Hex()
-	s.currentWork[1] = common.BytesToHash(SeedHash(block.NumberU64())).Hex()
+	epl := CalcEpochLength(block.NumberU64(), s.ethash.config.ECIP1099Block)
+	ep := CalcEpoch(block.NumberU64(), epl)
+	s.currentWork[1] = common.BytesToHash(SeedHash(ep, epl)).Hex()
 	s.currentWork[2] = common.BytesToHash(new(big.Int).Div(two256, block.Difficulty()).Bytes()).Hex()
 	s.currentWork[3] = hexutil.EncodeBig(block.Number())
 
