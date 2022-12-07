@@ -621,11 +621,11 @@ func AccumulateRewards(config *params.ChainConfig, header *types.Header, uncles 
 	if config.IsClassic() && header.Number.Cmp(config.ECIP1017Block()) >= 0 {
 		return ecip1017BlockReward(header, uncles)
 	} else {
-	if config.IsByzantium(header.Number.Uint64()) {
-		blockReward = ByzantiumBlockReward
-	}
-	if config.IsConstantinople(header.Number.Uint64()) {
-		blockReward = ConstantinopleBlockReward
+		if config.IsByzantium(header.Number.Uint64()) {
+			blockReward = ByzantiumBlockReward
+		}
+		if config.IsConstantinople(header.Number.Uint64()) {
+			blockReward = ConstantinopleBlockReward
 		}
 	}
 	// Accumulate the rewards for the miner and any included uncles

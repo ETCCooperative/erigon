@@ -243,12 +243,12 @@ func (lru *lru) get(epoch uint64, epochLength uint64, ecip1099FBlock *uint64) (i
 
 // cache wraps an ethash cache with some metadata to allow easier concurrent use.
 type cache struct {
-	epoch uint64    // Epoch for which this cache is relevant
+	epoch       uint64    // Epoch for which this cache is relevant
 	epochLength uint64    // Epoch length (ECIP-1099)
-	dump  *os.File  // File descriptor of the memory mapped cache
-	mmap  mmap.MMap // Memory map itself to unmap before releasing
-	cache []uint32  // The actual cache data content (may be memory mapped)
-	once  sync.Once // Ensures the cache is generated only once
+	dump        *os.File  // File descriptor of the memory mapped cache
+	mmap        mmap.MMap // Memory map itself to unmap before releasing
+	cache       []uint32  // The actual cache data content (may be memory mapped)
+	once        sync.Once // Ensures the cache is generated only once
 }
 
 // newCache creates a new ethash verification cache and returns it as a plain Go
@@ -333,7 +333,7 @@ func (c *cache) generate(dir string, limit int, lock bool, test bool) {
 				} else {
 					logger.Error("Failed to delete ethash cache file", "target.epoch", e, "file", file, "err", err)
 				}
-		}
+			}
 		}
 	})
 }
@@ -349,13 +349,13 @@ func (c *cache) finalizer() {
 
 // dataset wraps an ethash dataset with some metadata to allow easier concurrent use.
 type dataset struct {
-	epoch   uint64    // Epoch for which this cache is relevant
+	epoch       uint64    // Epoch for which this cache is relevant
 	epochLength uint64    // Epoch length (ECIP-1099)
-	dump    *os.File  // File descriptor of the memory mapped cache
-	mmap    mmap.MMap // Memory map itself to unmap before releasing
-	dataset []uint32  // The actual cache data content
-	once    sync.Once // Ensures the cache is generated only once
-	done    uint32    // Atomic flag to determine generation status
+	dump        *os.File  // File descriptor of the memory mapped cache
+	mmap        mmap.MMap // Memory map itself to unmap before releasing
+	dataset     []uint32  // The actual cache data content
+	once        sync.Once // Ensures the cache is generated only once
+	done        uint32    // Atomic flag to determine generation status
 }
 
 // newDataset creates a new ethash mining dataset and returns it as a plain Go
@@ -445,7 +445,7 @@ func (d *dataset) generate(dir string, limit int, lock bool, test bool) {
 				} else {
 					logger.Error("Failed to delete ethash full file", "target.epoch", e, "file", file, "err", err)
 				}
-		}
+			}
 		}
 	})
 }
