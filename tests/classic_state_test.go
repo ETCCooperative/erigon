@@ -50,6 +50,7 @@ func TestState_Classic(t *testing.T) {
 	st.skipLoad(`^stTimeConsuming/`)
 	st.skipLoad(`.*vmPerformance/loop.*`)
 	st.skipLoad(`.*_config`) // These are configuration files included that may be included in the tests files.
+	st.skipLoad(`.*EOF1.*`)  // EOF1 is not configured or implemented yet for Ethereum Classic.
 
 	st.walk(t, stateTestDirClassic, func(t *testing.T, name string, test *StateTest) {
 		db := memdb.NewTestDB(t)
