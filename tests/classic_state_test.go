@@ -26,7 +26,7 @@ func TestState_Classic(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("fix me on win please") // it's too slow on win, need generally improve speed of this tests
 	}
-	t.Parallel()
+	//t.Parallel()
 
 	st := new(testMatcher)
 
@@ -41,17 +41,12 @@ func TestState_Classic(t *testing.T) {
 			key := fmt.Sprintf("%s/%d", subtest.Fork, subtest.Index)
 			t.Run(key, func(t *testing.T) {
 				withTrace(t, func(vmconfig vm.Config) error {
-					config, ok := Forks[subtest.Fork]
-					if !ok {
-						return UnsupportedForkError{subtest.Fork}
-					}
-					rules := config.Rules(1)
 					tx, err := db.BeginRw(context.Background())
 					if err != nil {
 						t.Fatal(err)
 					}
 					defer tx.Rollback()
-					_, err = test.Run(rules, tx, subtest, vmconfig)
+					_, err = test.Run(tx, subtest, vmconfig)
 					tx.Rollback()
 					if err != nil && len(test.json.Post[subtest.Fork][subtest.Index].ExpectException) > 0 {
 						// Ignore expected errors
