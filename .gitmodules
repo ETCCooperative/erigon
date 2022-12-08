@@ -3,4 +3,4 @@
 	url = https://github.com/ethereum/tests.git
 [submodule "testdata-etc"]
 	path = tests/testdata-etc
-	url = https://github.com/etclabscore/tests-etc.git
+	url = https://github.com/etclabscore/tests.git
