@@ -1,10 +1,20 @@
+// Copyright 2022 The erigon Authors
+// This file is part of the erigon library.
+//
+// The erigon library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The erigon library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+
 package params
-
-import (
-	"math/big"
-
-	"github.com/ledgerwatch/erigon/common/math"
-)
 
 // ClassicChainConfig is the chain parameters to run a node on the main network.
 var ClassicChainConfig = readChainSpec("chainspecs/classic.json")
@@ -17,52 +27,51 @@ func (c *ChainConfig) IsClassic() bool {
 	return c.ChainID.Cmp(ClassicChainConfig.ChainID) == 0
 }
 
-// ECIP1010Block_Classic defines the block number where the ECIP-1010 difficulty bomb delay is activated,
-// delaying the bomb for 2M blocks.
-var ECIP1010Block_Classic = big.NewInt(3_000_000)
-
-func (c *ChainConfig) ECIP1010Block() *big.Int {
-	if c.IsClassic() {
-		return ECIP1010Block_Classic
-	}
-	return nil
-}
-
-// ECIP1041Block_Classic is the ultimate difficulty bomb diffuser block number for the Ethereum Classic network.
-var ECIP1041Block_Classic = big.NewInt(5_900_000)
-
-func (c *ChainConfig) ECIP1041Block() *big.Int {
-	if c.IsClassic() {
-		return ECIP1041Block_Classic
-	}
-	return nil
-}
-
-// ECIP1017Block_Classic defines the block number where the ECIP-1017 monetary policy is activated,
-var ECIP1017Block_Classic = big.NewInt(5_000_000)
-var infinity = big.NewInt(math.MaxInt64)
-
-func (c *ChainConfig) ECIP1017Block() *big.Int {
-	if c.IsClassic() {
-		return ECIP1017Block_Classic
-	}
-	return infinity
-}
-
-// ECIP1099Block_Classic defines the block number where the ECIP-1099 Etchash PoW algorithm is activated.
-var ECIP1099Block_Classic = big.NewInt(11_700_000)
-
-var (
-	classicEIP155Block   = big.NewInt(3_000_000)
-	classicEIP160        = big.NewInt(3_000_000)
-	classicMystiqueBlock = big.NewInt(14_525_000)
-)
-
+// IsProtectedSigner returns true if the signer is protected from replay attacks with Chain ID.
+// This feature was activated for the ETH network (et al) with the Spurious Dragon hard fork,
+// while it was activated for the ETC network with a different hard fork, which differentially
+// did not include EIP-161 State Trie Clearing.
 func (c *ChainConfig) IsProtectedSigner(num uint64) bool {
 	if c.IsClassic() {
-		return isForked(classicEIP155Block, num)
+		return isForked(c.ClassicEIP155Block, num)
 	}
 	return isForked(c.SpuriousDragonBlock, num)
 }
 
+// ClassicDNS is the Ethereum Classic DNS network identifier.
 const ClassicDNS = "enrtree://AJE62Q4DUX4QMMXEHCSSCSC65TDHZYSMONSD64P3WULVLSF6MRQ3K@all.classic.blockd.info"
+
+// IsECIP1010 returns true if the block number is greater than or equal to the ECIP1010 block number.
+// ECIP1010 disables the difficulty bomb for 2000000 blocks.
+func (c *ChainConfig) IsECIP1010(num uint64) bool {
+	return isForked(c.ECIP1010Block, num)
+}
+
+// IsECIP1010Disable returns true if the block number is greater than or equal to the ECIP1010Disable block number.
+// This is the block number where the difficulty bomb is re-enabled after ECIP1010's pause runs out.
+func (c *ChainConfig) IsECIP1010Disable(num uint64) bool {
+	return isForked(c.ECIP1010DisableBlock, num)
+}
+
+// IsECIP1017 returns true if the block number is greater than or equal to the ECIP1017 block number.
+// ECIP1017 defines the ETC monetary policy known as 5M20, which reduces the block reward by 20% every 5 million blocks.
+func (c *ChainConfig) IsECIP1017(num uint64) bool {
+	return isForked(c.ECIP1017Block, num)
+}
+
+// IsECIP1041 returns true if the block number is greater than or equal to the ECIP1041 block number.
+// ECIP1041 removes the difficulty bomb.
+func (c *ChainConfig) IsECIP1041(num uint64) bool {
+	return isForked(c.ECIP1041Block, num)
+}
+
+// ECIP1099ForkBlockUint64 returns the ECIP1099ForkBlock as a uint64 pointer.
+// If the ECIP1099ForkBlock is not defined, nil is returned.
+// ECIP1099 defines an 'etchash' vs. ethash algorithm change, doubling the length of the DAG epoch.
+func (c *ChainConfig) ECIP1099ForkBlockUint64() *uint64 {
+	if c.ECIP1099Block == nil {
+		return nil
+	}
+	n := c.ECIP1099Block.Uint64()
+	return &n
+}

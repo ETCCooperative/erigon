@@ -1,3 +1,19 @@
+// Copyright 2022 The erigon Authors
+// This file is part of the erigon library.
+//
+// The erigon library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The erigon library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+
 //go:build integration
 
 package tests
@@ -33,6 +49,7 @@ func TestState_Classic(t *testing.T) {
 	// Very time consuming
 	st.skipLoad(`^stTimeConsuming/`)
 	st.skipLoad(`.*vmPerformance/loop.*`)
+	st.skipLoad(`.*_config`) // These are configuration files included that may be included in the tests files.
 
 	st.walk(t, stateTestDirClassic, func(t *testing.T, name string, test *StateTest) {
 		db := memdb.NewTestDB(t)

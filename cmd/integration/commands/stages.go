@@ -1283,8 +1283,7 @@ func initConsensusEngine(chainConfig *params.ChainConfig, logger log.Logger, sna
 
 	switch {
 	case chainConfig.IsClassic():
-		ecip1100Block := params.ECIP1099Block_Classic.Uint64()
-		config.Ethash.ECIP1099Block = &ecip1100Block
+		config.Ethash.ECIP1099Block = chainConfig.ECIP1099ForkBlockUint64()
 	case chainConfig.Clique != nil:
 		c := params.CliqueSnapshot
 		c.DBPath = filepath.Join(datadir, "clique", "db")

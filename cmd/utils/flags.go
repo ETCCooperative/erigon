@@ -1535,9 +1535,7 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 		}
 
 		cfg.EthDiscoveryURLs = []string{params.ClassicDNS}
-
-		u := params.ECIP1099Block_Classic.Uint64()
-		cfg.Ethash.ECIP1099Block = &u
+		cfg.Ethash.ECIP1099Block = cfg.Genesis.Config.ECIP1099ForkBlockUint64()
 	case "":
 		if cfg.NetworkID == 1 {
 			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)

@@ -21,11 +21,11 @@ func CalcDifficulty_Classic(config *params.ChainConfig, time, parentTime uint64,
 	switch {
 	case config.IsByzantium(next):
 		return calcDifficultyNoBombByzantium(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
-	case next >= config.ECIP1041Block().Uint64():
+	case config.IsECIP1041(next):
 		return calcDifficultyNoBombHomestead(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
-	case next >= config.ECIP1010Block().Uint64()+2_000_000:
+	case config.IsECIP1010Disable(next):
 		return calcDifficulty1010Explode(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
-	case next >= config.ECIP1010Block().Uint64():
+	case config.IsECIP1010(next):
 		return calcDifficulty1010Pause(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
 	case config.IsHomestead(next):
 		return calcDifficultyHomestead(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
@@ -106,7 +106,7 @@ func makeDifficultyCalculatorClassic(eip100b, defuse, pause bool) func(time, par
 		exPeriodRef := big.NewInt(int64(parentNumber) + 1)
 
 		if pause {
-			exPeriodRef.Set(params.ECIP1010Block_Classic)
+			exPeriodRef.Set(params.ClassicChainConfig.ECIP1010Block)
 		} else {
 			// unpaused (exploded) difficulty bomb
 			length := int64(2_000_000)

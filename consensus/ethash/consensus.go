@@ -618,7 +618,7 @@ func (ethash *Ethash) IsServiceTransaction(sender common.Address, syscall consen
 func AccumulateRewards(config *params.ChainConfig, header *types.Header, uncles []*types.Header) (uint256.Int, []uint256.Int) {
 	// Select the correct block reward based on chain progression
 	blockReward := FrontierBlockReward
-	if config.IsClassic() && header.Number.Cmp(config.ECIP1017Block()) >= 0 {
+	if config.IsECIP1017(header.Number.Uint64()) {
 		return ecip1017BlockReward(header, uncles)
 	} else {
 		if config.IsByzantium(header.Number.Uint64()) {

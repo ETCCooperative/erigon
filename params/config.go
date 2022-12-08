@@ -254,6 +254,16 @@ type ChainConfig struct {
 	NanoBlock       *big.Int `json:"nanoBlock,omitempty" toml:",omitempty"`       // nanoBlock switch block (nil = no fork, 0 = already activated)
 	MoranBlock      *big.Int `json:"moranBlock,omitempty" toml:",omitempty"`      // moranBlock switch block (nil = no fork, 0 = already activated)
 
+	// Ethereum Classic (ETC) fork blocks
+	ECIP1010Block        *big.Int `json:"ecip1010Block,omitempty"`        // ECIP1010 switch block (nil = no fork, 0 = already activated)
+	ECIP1010DisableBlock *big.Int `json:"ecip1010DisableBlock,omitempty"` // ECIP1010 switch DISABLE block (nil = no fork, 0 = already activated); The ECIP defines a 2M bomb delay.
+	ECIP1017Block        *big.Int `json:"ecip1017Block,omitempty"`        // ECIP1017 switch block (nil = no fork, 0 = already activated)
+	ECIP1041Block        *big.Int `json:"ecip1041Block,omitempty"`        // ECIP1041 switch block (nil = no fork, 0 = already activated)
+	ECIP1099Block        *big.Int `json:"ecip1099Block,omitempty"`        // ECIP1099 switch block (nil = no fork, 0 = already activated)
+	ClassicEIP155Block   *big.Int `json:"classicEIP155,omitempty"`        // Classic EIP155 switch block (nil = no fork, 0 = already activated)
+	ClassicEIP160Block   *big.Int `json:"classicEIP160,omitempty"`        // Classic EIP160 switch block (nil = no fork, 0 = already activated)
+	ClassicMystiqueBlock *big.Int `json:"classicMystique,omitempty"`      // Classic Mystique switch block (nil = no fork, 0 = already activated)
+
 	// Gnosis Chain fork blocks
 	PosdaoBlock *big.Int `json:"posdaoBlock,omitempty"`
 
@@ -885,8 +895,8 @@ func (c *ChainConfig) Rules(num uint64, time uint64) *Rules {
 		IsParlia:              c.Parlia != nil,
 		IsAura:                c.Aura != nil,
 
-		IsDieHard:  c.IsClassic() && isForked(classicEIP160, num),
-		IsMystique: c.IsClassic() && isForked(classicMystiqueBlock, num),
+		IsDieHard:  c.IsClassic() && isForked(c.ClassicEIP160Block, num),
+		IsMystique: c.IsClassic() && isForked(c.ClassicMystiqueBlock, num),
 	}
 }
 

@@ -19,5 +19,13 @@
   "grayGlacierBlock": null,
   "terminalTotalDifficulty": null,
   "terminalTotalDifficultyPassed": false,
-  "ethash": {}
+  "ethash": {},
+  "ecip1010Block":  3000000,
+  "ecip1010DisableBlock": 5000000,
+  "ecip1017Block": 5000000,
+  "ecip1041Block":  5900000,
+  "ecip1099Block": 11700000,
+  "classicEIP155":  3000000,
+  "classicEIP160": 3000000,
+  "classicMystique": 14525000
 }
