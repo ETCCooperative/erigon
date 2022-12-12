@@ -56,6 +56,7 @@ type PeerInfo struct {
 	peer          *p2p.Peer
 	lock          sync.RWMutex
 	deadlines     []time.Time // Request deadlines
+	uselessTill   time.Time
 	latestDealine time.Time
 	height        uint64
 	rw            p2p.MsgReadWriter
@@ -152,6 +153,12 @@ func (pi *PeerInfo) AddDeadline(deadline time.Time) {
 	pi.latestDealine = deadline
 }
 
+func (pi *PeerInfo) UselessTill(deadline time.Time) {
+	pi.lock.Lock()
+	defer pi.lock.Unlock()
+	pi.uselessTill = deadline
+}
+
 func (pi *PeerInfo) Height() uint64 {
 	return atomic.LoadUint64(&pi.height)
 }
@@ -183,6 +190,12 @@ func (pi *PeerInfo) ClearDeadlines(now time.Time, givePermit bool) int {
 	}
 	pi.deadlines = pi.deadlines[cutOff:]
 	return len(pi.deadlines)
+}
+
+func (pi *PeerInfo) IsUseless(now time.Time) bool {
+	pi.lock.RLock()
+	defer pi.lock.RUnlock()
+	return now.Before(pi.uselessTill)
 }
 
 func (pi *PeerInfo) LatestDeadline() time.Time {
@@ -737,6 +750,15 @@ func (ss *GrpcServer) PeerMinBlock(_ context.Context, req *proto_sentry.PeerMinB
 	return &emptypb.Empty{}, nil
 }
 
+func (ss *GrpcServer) PeerUseless(_ context.Context, req *proto_sentry.PeerUselessRequest) (*emptypb.Empty, error) {
+	peerID := ConvertH512ToPeerID(req.PeerId)
+	peerInfo := ss.getPeer(peerID)
+	if peerInfo != nil {
+		peerInfo.UselessTill(time.Now().Add(10 * time.Minute))
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (ss *GrpcServer) findBestPeersWithPermit(peerCount int) []*PeerInfo {
 	// Choose peer(s) that we can send this request to, with maximum number of permits
 	now := time.Now()
@@ -747,7 +769,7 @@ func (ss *GrpcServer) findBestPeersWithPermit(peerCount int) []*PeerInfo {
 		deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
 		height := peerInfo.Height()
 		//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
-		if deadlines < maxPermitsPerPeer {
+		if deadlines < maxPermitsPerPeer && !peerInfo.IsUseless(now) {
 			heap.Push(&byMinBlock, PeerRef{pi: peerInfo, height: height})
 			if byMinBlock.Len() > peerCount {
 				// Remove the worst peer
@@ -774,6 +796,28 @@ func (ss *GrpcServer) findBestPeersWithPermit(peerCount int) []*PeerInfo {
 	return foundPeers
 }
 
+func (ss *GrpcServer) findPeerByMinBlock(minBlock uint64) (*PeerInfo, bool) {
+	// Choose a peer that we can send this request to, with maximum number of permits
+	var foundPeerInfo *PeerInfo
+	var maxPermits int
+	now := time.Now()
+	ss.rangePeers(func(peerInfo *PeerInfo) bool {
+		if peerInfo.Height() >= minBlock {
+			deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
+			//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
+			if deadlines < maxPermitsPerPeer && !peerInfo.IsUseless(now) {
+				permits := maxPermitsPerPeer - deadlines
+				if permits > maxPermits {
+					maxPermits = permits
+					foundPeerInfo = peerInfo
+				}
+			}
+		}
+		return true
+	})
+	return foundPeerInfo, maxPermits > 0
+}
+
 func (ss *GrpcServer) SendMessageByMinBlock(_ context.Context, inreq *proto_sentry.SendMessageByMinBlockRequest) (*proto_sentry.SentPeers, error) {
 	reply := &proto_sentry.SentPeers{}
 	msgcode := eth.FromProto[ss.Protocol.Version][inreq.Data.Id]
@@ -781,6 +825,14 @@ func (ss *GrpcServer) SendMessageByMinBlock(_ context.Context, inreq *proto_sent
 		msgcode != eth.GetBlockBodiesMsg &&
 		msgcode != eth.GetPooledTransactionsMsg {
 		return reply, fmt.Errorf("sendMessageByMinBlock not implemented for message Id: %s", inreq.Data.Id)
+	}
+	if !ss.GetStatus().PassivePeers {
+		peerInfo, found := ss.findPeerByMinBlock(inreq.MinBlock)
+		if found {
+			ss.writePeer("sendMessageByMinBlock", peerInfo, msgcode, inreq.Data.Data, 30*time.Second)
+			reply.Peers = []*proto_types.H512{gointerfaces.ConvertHashToH512(peerInfo.ID())}
+			return reply, nil
+		}
 	}
 	peerInfos := ss.findBestPeersWithPermit(int(inreq.MaxPeers))
 	reply.Peers = make([]*proto_types.H512, len(peerInfos))
