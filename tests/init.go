@@ -210,7 +210,7 @@ var Forks = map[string]*params.ChainConfig{
 		ArrowGlacierBlock:     big.NewInt(0),
 		GrayGlacierBlock:      big.NewInt(0),
 	},
-	"Merge": {
+	"Merged": {
 		ChainID:                 big.NewInt(1),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
