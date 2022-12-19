@@ -939,7 +939,7 @@ func (ss *GrpcServer) SetStatus(ctx context.Context, statusData *proto_sentry.St
 				}
 				if common.BytesToHash(genesisHash[:]) == params.MainnetGenesisHash {
 					// Byzantium block is expected to be unique compared to the ETH config.
-					for _, f := range statusData.ForkData.Forks {
+					for _, f := range statusData.ForkData.HeightForks {
 						if f == params.ClassicChainConfig.ByzantiumBlock.Uint64() {
 							ss.discoveryDNS = []string{params.ClassicDNS}
 							logDNS := strings.Join(ss.discoveryDNS, ",")
