@@ -373,6 +373,11 @@ func (g *Genesis) ToBlock() (*types.Block, *state.IntraBlockState, error) {
 		}
 	}
 
+	var withdrawals []*types.Withdrawal
+	if g.Config != nil && (g.Config.IsShanghai(g.Timestamp)) {
+		withdrawals = []*types.Withdrawal{}
+	}
+
 	var root common.Hash
 	var statedb *state.IntraBlockState
 	wg := sync.WaitGroup{}
@@ -443,7 +448,7 @@ func (g *Genesis) ToBlock() (*types.Block, *state.IntraBlockState, error) {
 
 	head.Root = root
 
-	return types.NewBlock(head, nil, nil, nil, nil), statedb, nil
+	return types.NewBlock(head, nil, nil, nil, withdrawals), statedb, nil
 }
 
 func (g *Genesis) WriteGenesisState(tx kv.RwTx) (*types.Block, *state.IntraBlockState, error) {
