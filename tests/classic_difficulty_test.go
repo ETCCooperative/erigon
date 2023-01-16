@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ledgerwatch/erigon/common"
+	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon/common/math"
 	"github.com/ledgerwatch/erigon/core/types"
 )
@@ -18,7 +18,7 @@ type difficultyTestMarshalingProper struct {
 	ParentDifficulty   *math.HexOrDecimal256
 	CurrentTimestamp   math.HexOrDecimal64
 	CurrentDifficulty  *math.HexOrDecimal256
-	ParentUncles       common.Hash `json:"parentUncles"`
+	ParentUncles       libcommon.Hash `json:"parentUncles"`
 	CurrentBlockNumber math.HexOrDecimal64
 }
 

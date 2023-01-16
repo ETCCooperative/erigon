@@ -3,7 +3,7 @@ package ethash
 import (
 	"encoding/binary"
 
-	"github.com/ledgerwatch/erigon/common/hexutil"
+	hexutil "github.com/ledgerwatch/erigon-lib/common/hexutility"
 	"github.com/ledgerwatch/erigon/crypto"
 )
 

@@ -80,6 +80,9 @@ var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = readChainSpec("chainspecs/mainnet.json")
 
+	// ClassicChainConfig is the chain parameters to run a node on the Ethereum Classic main network.
+	ClassicChainConfig = readChainSpec("chainspecs/classic.json")
+
 	// SepoliaChainConfig contains the chain parameters to run a node on the Sepolia test network.
 	SepoliaChainConfig = readChainSpec("chainspecs/sepolia.json")
 

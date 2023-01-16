@@ -4,7 +4,8 @@ import (
 	"math/big"
 
 	"github.com/holiman/uint256"
-	"github.com/ledgerwatch/erigon/common"
+	chain "github.com/ledgerwatch/erigon-lib/chain"
+	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/params"
 )
@@ -16,7 +17,7 @@ var (
 	calcDifficulty1010Explode     = makeDifficultyCalculatorClassic(false, false, false)
 )
 
-func CalcDifficulty_Classic(config *params.ChainConfig, time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash common.Hash) *big.Int {
+func CalcDifficulty_Classic(config *chain.Config, time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash libcommon.Hash) *big.Int {
 	next := parentNumber + 1
 	switch {
 	case config.IsByzantium(next):
@@ -34,8 +35,8 @@ func CalcDifficulty_Classic(config *params.ChainConfig, time, parentTime uint64,
 	}
 }
 
-func makeDifficultyCalculatorClassic(eip100b, defuse, pause bool) func(time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash common.Hash) *big.Int {
-	return func(time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash common.Hash) *big.Int {
+func makeDifficultyCalculatorClassic(eip100b, defuse, pause bool) func(time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash libcommon.Hash) *big.Int {
+	return func(time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash libcommon.Hash) *big.Int {
 		// https://github.com/ethereum/EIPs/issues/100.
 		// algorithm:
 		// diff = (parent_diff +

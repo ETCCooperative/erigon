@@ -426,7 +426,7 @@ func runPeer(
 				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] GetNodeData", peerID))
+			// log.Info(fmt.Sprintf("[%s] GetNodeData", peerID))
 		case eth.GetReceiptsMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -436,7 +436,7 @@ func runPeer(
 				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] GetReceiptsMsg", peerID))
+			// log.Info(fmt.Sprintf("[%s] GetReceiptsMsg", peerID))
 		case eth.ReceiptsMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -446,7 +446,7 @@ func runPeer(
 				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] ReceiptsMsg", peerID))
+			// log.Info(fmt.Sprintf("[%s] ReceiptsMsg", peerID))
 		case eth.NewBlockHashesMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -607,7 +607,7 @@ func NewGrpcServer(ctx context.Context, dialCandidates enode.Iterator, readNodeI
 			// TODO: remember handshake reply per peer ID and return eth-related Status info (see ethPeerInfo in geth)
 			return nil
 		},
-		//Attributes: []enr.Entry{eth.CurrentENREntry(chainConfig, genesisHash, headHeight)},
+		// Attributes: []enr.Entry{eth.CurrentENREntry(chainConfig, genesisHash, headHeight)},
 	}
 
 	return ss
@@ -723,7 +723,7 @@ func (ss *GrpcServer) startSync(ctx context.Context, bestHash libcommon.Hash, pe
 }
 
 func (ss *GrpcServer) PenalizePeer(_ context.Context, req *proto_sentry.PenalizePeerRequest) (*emptypb.Empty, error) {
-	//log.Warn("Received penalty", "kind", req.GetPenalty().Descriptor().FullName, "from", fmt.Sprintf("%s", req.GetPeerId()))
+	// log.Warn("Received penalty", "kind", req.GetPenalty().Descriptor().FullName, "from", fmt.Sprintf("%s", req.GetPeerId()))
 	peerID := ConvertH512ToPeerID(req.PeerId)
 	ss.removePeer(peerID)
 	return &emptypb.Empty{}, nil
@@ -756,7 +756,7 @@ func (ss *GrpcServer) findBestPeersWithPermit(peerCount int) []*PeerInfo {
 	ss.rangePeers(func(peerInfo *PeerInfo) bool {
 		deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
 		height := peerInfo.Height()
-		//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
+		// fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
 		if deadlines < maxPermitsPerPeer {
 			heap.Push(&byMinBlock, PeerRef{pi: peerInfo, height: height})
 			if byMinBlock.Len() > peerCount {
@@ -792,7 +792,7 @@ func (ss *GrpcServer) findPeerByMinBlock(minBlock uint64) (*PeerInfo, bool) {
 	ss.rangePeers(func(peerInfo *PeerInfo) bool {
 		if peerInfo.Height() >= minBlock {
 			deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
-			//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
+			// fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
 			if deadlines < maxPermitsPerPeer {
 				permits := maxPermitsPerPeer - deadlines
 				if permits > maxPermits {
@@ -848,8 +848,8 @@ func (ss *GrpcServer) SendMessageById(_ context.Context, inreq *proto_sentry.Sen
 	peerID := ConvertH512ToPeerID(inreq.PeerId)
 	peerInfo := ss.getPeer(peerID)
 	if peerInfo == nil {
-		//TODO: enable after support peer to sentry mapping
-		//return reply, fmt.Errorf("peer not found: %s", peerID)
+		// TODO: enable after support peer to sentry mapping
+		// return reply, fmt.Errorf("peer not found: %s", peerID)
 		return reply, nil
 	}
 
@@ -937,7 +937,7 @@ func (ss *GrpcServer) SetStatus(ctx context.Context, statusData *proto_sentry.St
 				if url := params.KnownDNSNetwork(genesisHash, "all"); url != "" {
 					ss.discoveryDNS = []string{url}
 				}
-				if common.BytesToHash(genesisHash[:]) == params.MainnetGenesisHash {
+				if libcommon.BytesToHash(genesisHash[:]) == params.MainnetGenesisHash {
 					// Byzantium block is expected to be unique compared to the ETH config.
 					for _, f := range statusData.ForkData.HeightForks {
 						if f == params.ClassicChainConfig.ByzantiumBlock.Uint64() {
