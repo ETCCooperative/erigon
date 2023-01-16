@@ -230,6 +230,7 @@ func (s *remoteSealer) makeWork(block *types.Block) {
 	hash := s.ethash.SealHash(block.Header())
 	epl := CalcEpochLength(block.NumberU64(), s.ethash.config.ECIP1099Block)
 	ep := CalcEpoch(block.NumberU64(), epl)
+	s.currentWork[0] = hash.Hex()
 	s.currentWork[1] = libcommon.BytesToHash(SeedHash(ep, epl)).Hex()
 	s.currentWork[2] = libcommon.BytesToHash(new(big.Int).Div(two256, block.Difficulty()).Bytes()).Hex()
 	s.currentWork[3] = hexutil.EncodeBig(block.Number())
