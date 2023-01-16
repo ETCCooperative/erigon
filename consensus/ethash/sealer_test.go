@@ -69,7 +69,7 @@ func TestRemoteNotify(t *testing.T) {
 			t.Errorf("work packet hash mismatch: have %s, want %s", work[0], want)
 		}
 		epl := CalcEpochLength(header.Number.Uint64(), ethash.config.ECIP1099Block)
-		ep := CalcEpoch(block.NumberU64(), epl)
+		ep := CalcEpoch(header.Number.Uint64(), epl)
 		if want := libcommon.BytesToHash(SeedHash(ep, epl)).Hex(); work[1] != want {
 			t.Errorf("work packet seed mismatch: have %s, want %s", work[1], want)
 		}
