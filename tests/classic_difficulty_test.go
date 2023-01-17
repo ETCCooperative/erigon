@@ -8,9 +8,7 @@ import (
 	"math/big"
 	"testing"
 
-	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon/common/math"
-	"github.com/ledgerwatch/erigon/core/types"
 )
 
 type difficultyTestMarshalingProper struct {
@@ -18,7 +16,7 @@ type difficultyTestMarshalingProper struct {
 	ParentDifficulty   *math.HexOrDecimal256
 	CurrentTimestamp   math.HexOrDecimal64
 	CurrentDifficulty  *math.HexOrDecimal256
-	ParentUncles       libcommon.Hash `json:"parentUncles"`
+	ParentUncles       math.HexOrDecimal64 `json:"parentUncles"`
 	CurrentBlockNumber math.HexOrDecimal64
 }
 
@@ -35,19 +33,15 @@ func TestDifficulty_Classic(t *testing.T) {
 			var tests = make(map[string]DifficultyTest)
 			var testsm map[string]difficultyTestMarshalingProper
 			if err := json.Unmarshal(rawTests, &testsm); err != nil {
-				t.Error(err)
+				t.Error(err, string(rawTests))
 				continue
 			}
 
 			for k, v := range testsm {
-				uncles := uint64(0)
-				if v.ParentUncles != types.EmptyUncleHash {
-					uncles = 1
-				}
 				test := DifficultyTest{
 					ParentTimestamp:    uint64(v.ParentTimestamp),
 					ParentDifficulty:   (*big.Int)(v.ParentDifficulty),
-					ParentUncles:       uncles,
+					ParentUncles:       uint64(v.ParentUncles),
 					CurrentTimestamp:   uint64(v.CurrentTimestamp),
 					CurrentBlockNumber: uint64(v.CurrentBlockNumber),
 					CurrentDifficulty:  (*big.Int)(v.CurrentDifficulty),
