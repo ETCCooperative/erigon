@@ -7,6 +7,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon-lib/kv"
+	"github.com/ledgerwatch/erigon-lib/kv/rawdbv3"
 
 	"github.com/ledgerwatch/erigon/common/changeset"
 	"github.com/ledgerwatch/erigon/common/hexutil"
@@ -65,6 +66,15 @@ func (api *PrivateDebugAPIImpl) StorageRangeAt(ctx context.Context, blockHash li
 	}
 	engine := api.engine()
 
+	if api.historyV3(tx) {
+		number := rawdb.ReadHeaderNumber(tx, blockHash)
+		minTxNum, err := rawdbv3.TxNums.Min(tx, *number)
+		if err != nil {
+			return StorageRangeResult{}, err
+		}
+		return storageRangeAtV3(tx.(kv.TemporalTx), contractAddress, keyStart, minTxNum+txIndex, maxResult)
+	}
+
 	block, err := api.blockByHashWithSenders(tx, blockHash)
 	if err != nil {
 		return StorageRangeResult{}, err
@@ -73,10 +83,7 @@ func (api *PrivateDebugAPIImpl) StorageRangeAt(ctx context.Context, blockHash li
 		return StorageRangeResult{}, nil
 	}
 
-	if api.historyV3(tx) {
-		panic("not implemented!")
-	}
-	_, _, _, _, stateReader, err := transactions.ComputeTxEnv(ctx, engine, block, chainConfig, api._blockReader, tx, txIndex, api._agg, api.historyV3(tx))
+	_, _, _, _, stateReader, err := transactions.ComputeTxEnv(ctx, engine, block, chainConfig, api._blockReader, tx, txIndex, api.historyV3(tx))
 	if err != nil {
 		return StorageRangeResult{}, err
 	}
@@ -236,7 +243,7 @@ func (api *PrivateDebugAPIImpl) AccountAt(ctx context.Context, blockHash libcomm
 	if block == nil {
 		return nil, nil
 	}
-	_, _, _, ibs, _, err := transactions.ComputeTxEnv(ctx, engine, block, chainConfig, api._blockReader, tx, txIndex, api._agg, api.historyV3(tx))
+	_, _, _, ibs, _, err := transactions.ComputeTxEnv(ctx, engine, block, chainConfig, api._blockReader, tx, txIndex, api.historyV3(tx))
 	if err != nil {
 		return nil, err
 	}

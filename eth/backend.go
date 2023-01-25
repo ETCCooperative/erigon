@@ -35,6 +35,7 @@ import (
 	"github.com/ledgerwatch/erigon-lib/chain"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon-lib/common/datadir"
+	"github.com/ledgerwatch/erigon-lib/common/dbg"
 	"github.com/ledgerwatch/erigon-lib/common/dir"
 	"github.com/ledgerwatch/erigon-lib/direct"
 	downloader3 "github.com/ledgerwatch/erigon-lib/downloader"
@@ -55,6 +56,7 @@ import (
 	txpool2 "github.com/ledgerwatch/erigon-lib/txpool"
 	"github.com/ledgerwatch/erigon-lib/txpool/txpooluitl"
 	types2 "github.com/ledgerwatch/erigon-lib/types"
+	"github.com/ledgerwatch/erigon/core/systemcontracts"
 	"github.com/ledgerwatch/log/v3"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
@@ -129,9 +131,15 @@ type Ethereum struct {
 
 	networkID uint64
 
-	lock              sync.RWMutex // Protects the variadic fields (e.g. gas price and etherbase)
-	chainConfig       *chain.Config
-	genesisHash       libcommon.Hash
+	lock         sync.RWMutex // Protects the variadic fields (e.g. gas price and etherbase)
+	chainConfig  *chain.Config
+	genesisBlock *types.Block
+	genesisHash  libcommon.Hash
+
+	ethBackendRPC      *privateapi.EthBackendServer
+	miningRPC          txpool_proto.MiningServer
+	stateChangesClient txpool2.StateChangesClient
+
 	miningSealingQuit chan struct{}
 	pendingBlocks     chan *types.Block
 	minedBlocks       chan *types.Block
@@ -142,7 +150,10 @@ type Ethereum struct {
 	sentriesClient *sentry.MultiClient
 	sentryServers  []*sentry.GrpcServer
 
-	stagedSync *stagedsync.Sync
+	stagedSync      *stagedsync.Sync
+	syncStages      []*stagedsync.Stage
+	syncUnwindOrder stagedsync.UnwindOrder
+	syncPruneOrder  stagedsync.PruneOrder
 
 	downloaderClient proto_downloader.DownloaderClient
 
@@ -162,7 +173,10 @@ type Ethereum struct {
 	forkValidator           *engineapi.ForkValidator
 	downloader              *downloader3.Downloader
 
-	agg *libstate.AggregatorV3
+	agg            *libstate.AggregatorV3
+	blockSnapshots *snapshotsync.RoSnapshots
+	blockReader    services.FullBlockReader
+	kvRPC          *remotedbserver.KvServer
 }
 
 func splitAddrIntoHostAndPort(addr string) (host string, port int, err error) {
@@ -221,7 +235,8 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 	}); err != nil {
 		panic(err)
 	}
-	config.Snapshot.Enabled = ethconfig.UseSnapshotsByChainName(chainConfig.ChainName) && config.Sync.UseSnapshots
+
+	config.Snapshot.Enabled = ethconfig.UseSnapshotsByChainName(chainConfig.ChainName) || config.Sync.UseSnapshots
 
 	log.Info("Initialised chain configuration", "config", chainConfig, "genesis", genesis.Hash())
 
@@ -274,6 +289,7 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		networkID:            config.NetworkID,
 		etherbase:            config.Miner.Etherbase,
 		chainConfig:          chainConfig,
+		genesisBlock:         genesis,
 		genesisHash:          genesis.Hash(),
 		waitForStageLoopStop: make(chan struct{}),
 		waitForMiningStop:    make(chan struct{}),
@@ -282,19 +298,26 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 			Accumulator: shards.NewAccumulator(),
 		},
 	}
+	fmt.Printf("dbg1: %s\n", dbg.Stack())
 	blockReader, allSnapshots, agg, err := backend.setUpBlockReader(ctx, config.Dirs, config.Snapshot, config.Downloader)
 	if err != nil {
 		return nil, err
 	}
-	backend.agg = agg
+	backend.agg, backend.blockSnapshots, backend.blockReader = agg, allSnapshots, blockReader
+	fmt.Printf("dbg2: %s\n", dbg.Stack())
 
 	if config.HistoryV3 {
-		backend.chainDB = temporal.New(backend.chainDB, agg, accounts.ConvertV3toV2, historyv2read.RestoreCodeHash)
+		backend.chainDB, err = temporal.New(backend.chainDB, agg, accounts.ConvertV3toV2, historyv2read.RestoreCodeHash, accounts.DecodeIncarnationFromStorage, systemcontracts.SystemContractCodeLookup[chainConfig.ChainName])
+		if err != nil {
+			return nil, err
+		}
 		chainKv = backend.chainDB
 	}
+	fmt.Printf("dbg3: %s\n", dbg.Stack())
 
 	kvRPC := remotedbserver.NewKvServer(ctx, chainKv, allSnapshots, agg)
 	backend.notifications.StateChangesConsumer = kvRPC
+	backend.kvRPC = kvRPC
 
 	backend.gasPrice, _ = uint256.FromBig(config.Miner.GasPrice)
 
@@ -554,7 +577,7 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		if err != nil {
 			return nil, err
 		}
-		bs, err := clcore.RetrieveBeaconState(ctx,
+		bs, err := clcore.RetrieveBeaconState(ctx, beaconCfg, genesisCfg,
 			clparams.GetCheckpointSyncEndpoint(clparams.NetworkType(config.NetworkID)))
 
 		if err != nil {
@@ -645,10 +668,22 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		return nil, err
 	}
 
-	backend.stagedSync, err = stages2.NewStagedSync(backend.sentryCtx, backend.chainDB, stack.Config().P2P, config, backend.sentriesClient, backend.notifications, backend.downloaderClient, allSnapshots, backend.agg, backend.forkValidator, backend.engine)
-	if err != nil {
-		return nil, err
-	}
+	backend.ethBackendRPC, backend.miningRPC, backend.stateChangesClient = ethBackendRPC, miningRPC, stateDiffClient
+
+	backend.syncStages = stages2.NewDefaultStages(backend.sentryCtx, backend.chainDB, stack.Config().P2P, config, backend.sentriesClient, backend.notifications, backend.downloaderClient, allSnapshots, backend.agg, backend.forkValidator, backend.engine)
+	backend.syncUnwindOrder = stagedsync.DefaultUnwindOrder
+	backend.syncPruneOrder = stagedsync.DefaultPruneOrder
+
+	return backend, nil
+}
+func (backend *Ethereum) Init(stack *node.Node, config *ethconfig.Config) error {
+	ethBackendRPC, miningRPC, stateDiffClient := backend.ethBackendRPC, backend.miningRPC, backend.stateChangesClient
+	blockReader := backend.blockReader
+	ctx := backend.sentryCtx
+	chainKv := backend.chainDB
+	var err error
+
+	backend.stagedSync = stagedsync.New(backend.syncStages, backend.syncUnwindOrder, backend.syncPruneOrder)
 
 	backend.sentriesClient.Hd.StartPoSDownloader(backend.sentryCtx, backend.sentriesClient.SendHeaderRequest, backend.sentriesClient.Penalize)
 
@@ -660,7 +695,7 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 			badBlockHeader = header
 			return hErr
 		}); err != nil {
-			return nil, err
+			return err
 		}
 
 		if badBlockHeader != nil {
@@ -679,14 +714,14 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		var headCh chan [][]byte
 		headCh, backend.unsubscribeEthstat = backend.notifications.Events.AddHeaderSubscription()
 		if err := ethstats.New(stack, backend.sentryServers, chainKv, backend.engine, config.Ethstats, backend.networkID, ctx.Done(), headCh); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	// start HTTP API
 	httpRpcCfg := stack.Config().Http
 	ethRpcClient, txPoolRpcClient, miningRpcClient, stateCache, ff, err := cli.EmbeddedServices(ctx, chainKv, httpRpcCfg.StateCache, blockReader, ethBackendRPC, backend.txPool2GrpcServer, miningRPC, stateDiffClient)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var borDb kv.RoDB
@@ -704,7 +739,7 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 
 	// Register the backend on the node
 	stack.RegisterLifecycle(backend)
-	return backend, nil
+	return nil
 }
 
 func (s *Ethereum) APIs() []rpc.API {
@@ -929,7 +964,9 @@ func (s *Ethereum) NodesInfo(limit int) (*remote.NodesInfoReply, error) {
 
 // sets up blockReader and client downloader
 func (s *Ethereum) setUpBlockReader(ctx context.Context, dirs datadir.Dirs, snConfig ethconfig.Snapshot, downloaderCfg *downloadercfg.Cfg) (services.FullBlockReader, *snapshotsync.RoSnapshots, *libstate.AggregatorV3, error) {
+	fmt.Printf("dbg21: %s\n", dbg.Stack())
 	if !snConfig.Enabled {
+		fmt.Printf("dbg21: %s\n", dbg.Stack())
 		blockReader := snapshotsync.NewBlockReader()
 		return blockReader, nil, nil, nil
 	}
@@ -959,16 +996,18 @@ func (s *Ethereum) setUpBlockReader(ctx context.Context, dirs datadir.Dirs, snCo
 
 			s.downloaderClient = direct.NewDownloaderClient(bittorrentServer)
 		}
+		fmt.Printf("dbg22: %s\n", dbg.Stack())
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
 
 	dir.MustExist(dirs.SnapHistory)
-	agg, err := libstate.NewAggregator22(ctx, dirs.SnapHistory, dirs.Tmp, ethconfig.HistoryV3AggregationStep, s.chainDB)
+	agg, err := libstate.NewAggregatorV3(ctx, dirs.SnapHistory, dirs.Tmp, ethconfig.HistoryV3AggregationStep, s.chainDB)
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	fmt.Printf("dbg23: %s\n", dbg.Stack())
 	if err = agg.ReopenFiles(); err != nil {
 		return nil, nil, nil, err
 	}

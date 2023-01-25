@@ -73,7 +73,7 @@ var Defaults = Config{
 		UseSnapshots:               false,
 		ExecWorkerCount:            2,
 		ReconWorkerCount:           estimate.ReconstituteState.Workers(),
-		BlockDownloaderWindow:      32768,
+		BodyCacheLimit:             256 * 1024 * 1024,
 		BodyDownloadTimeoutSeconds: 30,
 	},
 	Ethash: ethash.Config{
@@ -224,9 +224,6 @@ type Config struct {
 
 	StateStream bool
 
-	// Enable WatchTheBurn stage
-	EnabledIssuance bool
-
 	//  New DB and Snapshots format of history allows: parallel blocks execution, get state as of given transaction without executing whole block.",
 	HistoryV3 bool
 
@@ -255,13 +252,14 @@ type Sync struct {
 	ExecWorkerCount  int
 	ReconWorkerCount int
 
-	BlockDownloaderWindow      int
+	BodyCacheLimit             datasize.ByteSize
 	BodyDownloadTimeoutSeconds int // TODO: change to duration
 }
 
 // Chains where snapshots are enabled by default
 var ChainsWithSnapshots = map[string]struct{}{
-	networkname.MainnetChainName:    {},
+	networkname.MainnetChainName: {},
+	//networkname.SepoliaChainName:    {},
 	networkname.BSCChainName:        {},
 	networkname.GoerliChainName:     {},
 	networkname.MumbaiChainName:     {},
