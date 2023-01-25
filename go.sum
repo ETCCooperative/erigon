@@ -276,6 +276,8 @@ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1m
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.mod h1:hliV/p42l8fGbc6Y9bQ70uLwIvmJyVE5k4iMKlh8wCQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
+github.com/etccooperative/erigon-lib v0.0.0-20230116172219-52226a40dbb8 h1:GQm3cFUj2Glpqy2oxJPjt1RrX1c60/KMmN16Nzb54Ww=
+github.com/etccooperative/erigon-lib v0.0.0-20230116172219-52226a40dbb8/go.mod h1:vFTw08qI/7NHL3z4/vBlIXRylFgZlMbnTehf7WDbcJQ=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/ferranbt/fastssz v0.0.0-20210120143747-11b9eff30ea9 h1:9VDpsWq096+oGMDTT/SgBD/VgZYf4pTF+KTPmZ+OaKM=
 github.com/ferranbt/fastssz v0.0.0-20210120143747-11b9eff30ea9/go.mod h1:DyEu2iuLBnb/T51BlsiO3yLYdJC6UbGMrIkqK1KmQxM=
@@ -565,8 +567,6 @@ github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/kylelemons/godebug v0.0.0-20170224010052-a616ab194758 h1:0D5M2HQSGD3PYPwICLl+/9oulQauOuETfgFvhBDffs0=
 github.com/leanovate/gopter v0.2.9 h1:fQjYxZaynp97ozCzfOyOuAGOU4aU/z37zf/tOujFk7c=
 github.com/leanovate/gopter v0.2.9/go.mod h1:U2L/78B+KVFIx2VmW6onHJQzXtFb+p5y3y2Sh+Jxxv8=
-github.com/ledgerwatch/erigon-lib v0.0.0-20230112023724-cc22f25b0990 h1:it6cqN87wBGrsir0ppWNmvz1feBE8h2ouKmj8fmNqGU=
-github.com/ledgerwatch/erigon-lib v0.0.0-20230112023724-cc22f25b0990/go.mod h1:vFTw08qI/7NHL3z4/vBlIXRylFgZlMbnTehf7WDbcJQ=
 github.com/ledgerwatch/erigon-snapshot v1.1.1-0.20230106211435-2670b273bb55 h1:4gY6eRXQiX0Te1oKTpsxj6MjXksQSSTHWiSh/j89sEY=
 github.com/ledgerwatch/erigon-snapshot v1.1.1-0.20230106211435-2670b273bb55/go.mod h1:3AuPxZc85jkehh/HA9h8gabv5MSi3kb/ddtzBsTVJFo=
 github.com/ledgerwatch/log/v3 v3.7.0 h1:aFPEZdwZx4jzA3+/Pf8wNDN5tCI0cIolq/kfvgcM+og=

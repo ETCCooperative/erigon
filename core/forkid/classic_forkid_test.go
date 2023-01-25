@@ -3,7 +3,8 @@ package forkid
 import (
 	"testing"
 
-	"github.com/ledgerwatch/erigon/common"
+	"github.com/ledgerwatch/erigon-lib/chain"
+	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon/params"
 )
 
@@ -15,8 +16,8 @@ func TestCreation_Classic(t *testing.T) {
 		want ID
 	}
 	tests := []struct {
-		config  *params.ChainConfig
-		genesis common.Hash
+		config  *chain.Config
+		genesis libcommon.Hash
 		cases   []testcase
 	}{
 		// Classic test cases
@@ -78,7 +79,7 @@ func TestCreation_Classic(t *testing.T) {
 func TestGatherForks(t *testing.T) {
 	cases := []struct {
 		name   string
-		config *params.ChainConfig
+		config *chain.Config
 		wantNs []uint64
 	}{
 		{

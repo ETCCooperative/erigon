@@ -19,11 +19,12 @@ package tests
 import (
 	"math/big"
 
+	"github.com/ledgerwatch/erigon-lib/chain"
 	"github.com/ledgerwatch/erigon/params"
 )
 
 func init() {
-	Forks["ETC_Atlantis"] = &params.ChainConfig{
+	Forks["ETC_Atlantis"] = &chain.Config{
 		ChainID:                 big.NewInt(61),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
@@ -46,7 +47,7 @@ func init() {
 		ClassicEIP160Block:      big.NewInt(0),
 		ClassicMystiqueBlock:    nil,
 	}
-	Forks["ETC_Agharta"] = &params.ChainConfig{
+	Forks["ETC_Agharta"] = &chain.Config{
 		ChainID:                 big.NewInt(61),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
@@ -69,7 +70,7 @@ func init() {
 		ClassicEIP160Block:      big.NewInt(0),
 		ClassicMystiqueBlock:    nil,
 	}
-	Forks["ETC_Phoenix"] = &params.ChainConfig{
+	Forks["ETC_Phoenix"] = &chain.Config{
 		ChainID:                 big.NewInt(61),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
@@ -92,7 +93,7 @@ func init() {
 		ClassicEIP160Block:      big.NewInt(0),
 		ClassicMystiqueBlock:    nil,
 	}
-	Forks["ETC_Magneto"] = &params.ChainConfig{
+	Forks["ETC_Magneto"] = &chain.Config{
 		ChainID:                 big.NewInt(61),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
@@ -115,7 +116,7 @@ func init() {
 		ClassicEIP160Block:      big.NewInt(0),
 		ClassicMystiqueBlock:    nil,
 	}
-	Forks["ETC_Mystique"] = &params.ChainConfig{
+	Forks["ETC_Mystique"] = &chain.Config{
 		ChainID:                 big.NewInt(61),
 		HomesteadBlock:          big.NewInt(0),
 		TangerineWhistleBlock:   big.NewInt(0),
