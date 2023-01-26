@@ -18,7 +18,7 @@ erigon --chain=classic [other options]
 Chain data is located by default in `~/.local/share/erigon/classic/`.\
 Ethash/Etchash DAGs are located by default in `~/.local/share/erigon/classic/ethash-dags/`.
 
-With the default sync mode, ETC requires around 125GB of space as of January 3, 2023 (block ~16.81M). 
+With the default sync mode, ETC requires around 125GB of space as of January 23, 2023 (block ~16.81M). 
 
 ## Developer Implementation
 
