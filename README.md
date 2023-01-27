@@ -34,5 +34,5 @@ This has been automated by a GitHub Action, which runs nightly.
 
 ### File naming
 
-- Added `*_test.go` files are named `classic_*_test.go`. Go test files must have the `_test.go` suffix.
-- Added `*.go` files are named `*_classic.go`
+- Added Go files are conventionally named `*_classic.go`.
+- Added Go test files are conventionally named `classic_*_test.go`. (Go test files must have the suffix `_test.go`.)
