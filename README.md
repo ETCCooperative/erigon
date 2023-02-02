@@ -20,6 +20,15 @@ Ethash/Etchash DAGs are located by default in `~/.local/share/erigon/classic/eth
 
 With the default sync mode, ETC requires around 125GB of space as of January 23, 2023 (block ~16.81M). 
 
+### Docker
+
+To run `erigon` with Docker use the following.
+
+```bash
+DOCKER_BUILDKIT=1 docker build -t erigon .
+docker run -p 30303:30303 [more options] erigon erigon --chain classic [more options]
+```
+
 ## Developer Implementation
 
 The Ethereum Classic chain configuration is defined in [./params/chainspecs/classic.json](./params/chainspecs/classic.json).
