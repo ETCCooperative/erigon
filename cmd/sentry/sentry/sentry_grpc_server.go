@@ -592,27 +592,27 @@ func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, re
 				}
 				log.Trace(fmt.Sprintf("[%s] Received status message OK", printablePeerID), "name", peer.Name())
 
-			err = runPeer(
-				ctx,
-				peerID,
-				protocol,
-				rw,
-				peerInfo,
-				ss.send,
-				ss.hasSubscribers,
-			) // runPeer never returns a nil error
-			log.Trace(fmt.Sprintf("[%s] Error while running peer: %v", printablePeerID, err))
-			ss.sendGonePeerToClients(gointerfaces.ConvertHashToH512(peerID))
-			return nil
-		},
-		NodeInfo: func() interface{} {
-			return readNodeInfo()
-		},
-		PeerInfo: func(peerID [64]byte) interface{} {
-			// TODO: remember handshake reply per peer ID and return eth-related Status info (see ethPeerInfo in geth)
-			return nil
-		},
-		// Attributes: []enr.Entry{eth.CurrentENREntry(chainConfig, genesisHash, headHeight)},
+				err = runPeer(
+					ctx,
+					peerID,
+					protocol,
+					rw,
+					peerInfo,
+					ss.send,
+					ss.hasSubscribers,
+				) // runPeer never returns a nil error
+				log.Trace(fmt.Sprintf("[%s] Error while running peer: %v", printablePeerID, err))
+				ss.sendGonePeerToClients(gointerfaces.ConvertHashToH512(peerID))
+				return nil
+			},
+			NodeInfo: func() interface{} {
+				return readNodeInfo()
+			},
+			PeerInfo: func(peerID [64]byte) interface{} {
+				// TODO: remember handshake reply per peer ID and return eth-related Status info (see ethPeerInfo in geth)
+				return nil
+			},
+			// Attributes: []enr.Entry{eth.CurrentENREntry(chainConfig, genesisHash, headHeight)},
 		})
 	}
 
