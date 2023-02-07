@@ -270,8 +270,8 @@ github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymF
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/etccooperative/erigon-lib v0.0.0-20230202174237-e581672eab7f h1:cLDwCU+J9m3pkGdG/UWvzESBVoT6nQjVWLMI/FYRLZI=
-github.com/etccooperative/erigon-lib v0.0.0-20230202174237-e581672eab7f/go.mod h1:cJSGIvVSkCmqdwOjskY+WnugOz5NVFs0EllQ4UN+rr4=
+github.com/etccooperative/erigon-lib v0.0.0-20230207184436-cea931bc109f h1:a6XE/f/cjKcjQCwkBt5q+5+yla551yt6NeSKV+R+Xys=
+github.com/etccooperative/erigon-lib v0.0.0-20230207184436-cea931bc109f/go.mod h1:cJSGIvVSkCmqdwOjskY+WnugOz5NVFs0EllQ4UN+rr4=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c h1:CndMRAH4JIwxbW8KYq6Q+cGWcGHz0FjGR3QqcInWcW0=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c/go.mod h1:AzA8Lj6YtixmJWL+wkKoBGsLWy9gFrAzi4g+5bCKwpY=
