@@ -38,9 +38,9 @@ type StateV3 struct {
 	queue        exec22.TxTaskQueue
 	queueLock    sync.Mutex
 	changes      map[string]*btree2.Map[string, []byte]
-	sizeEstimate uint64
+	sizeEstimate int
 	txsDone      *atomic2.Uint64
-	finished     bool
+	finished     atomic2.Bool
 }
 
 func NewStateV3() *StateV3 {
@@ -62,14 +62,11 @@ func (rs *StateV3) put(table string, key, val []byte) {
 	}
 	old, ok := t.Set(string(key), val)
 	if ok {
-		rs.sizeEstimate += uint64(len(val))
-		rs.sizeEstimate -= uint64(len(old))
+		rs.sizeEstimate += len(val) - len(old)
 	} else {
-		rs.sizeEstimate += btreeOverhead + uint64(len(key)) + uint64(len(val))
+		rs.sizeEstimate += len(key) + len(val)
 	}
 }
-
-const btreeOverhead = 16
 
 func (rs *StateV3) Get(table string, key []byte) []byte {
 	rs.lock.RLock()
@@ -138,10 +135,10 @@ func (rs *StateV3) QueueLen() int {
 func (rs *StateV3) Schedule() (*exec22.TxTask, bool) {
 	rs.queueLock.Lock()
 	defer rs.queueLock.Unlock()
-	for !rs.finished && rs.queue.Len() == 0 {
+	for !rs.finished.Load() && rs.queue.Len() == 0 {
 		rs.receiveWork.Wait()
 	}
-	if rs.finished {
+	if rs.finished.Load() {
 		return nil, false
 	}
 	if rs.queue.Len() > 0 {
@@ -226,9 +223,7 @@ func (rs *StateV3) AddWork(txTask *exec22.TxTask) (queueLen int) {
 }
 
 func (rs *StateV3) Finish() {
-	rs.queueLock.Lock()
-	defer rs.queueLock.Unlock()
-	rs.finished = true
+	rs.finished.Store(true)
 	rs.receiveWork.Broadcast()
 }
 
@@ -546,7 +541,7 @@ func (rs *StateV3) SizeEstimate() uint64 {
 	rs.lock.RLock()
 	r := rs.sizeEstimate
 	rs.lock.RUnlock()
-	return r
+	return uint64(r)
 }
 
 func (rs *StateV3) ReadsValid(readLists map[string]*exec22.KvList) bool {
