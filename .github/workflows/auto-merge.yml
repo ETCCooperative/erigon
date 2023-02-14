@@ -28,6 +28,11 @@ jobs:
           submodules: false
           fetch-depth: 0
 
+      - name: Set up git config
+        run: |
+          git config --global user.email "b5c6@protonmail.com"
+          git config --global user.name "meowsbits"
+
       # Keep forked remote default branch ('main') up-to-date with upstream.
       - name: Push erigon-lib 'upstream/main:main' (with --force)
         env:
@@ -37,11 +42,6 @@ jobs:
           git fetch upstream
           git remote set-url origin https://meowsbits:${MY_PAT}@github.com/etccooperative/erigon-lib.git
           git push origin upstream/main:main --force
-
-      - name: Set up git config
-        run: |
-          git config --global user.email "b5c6@protonmail.com"
-          git config --global user.name "meowsbits"
 
       # Keep forked remote ETC branch ('main+classic') merged with upstream's "main" branch.
       - name: Merge erigon-lib branch 'main' into 'main+classic'
@@ -86,6 +86,11 @@ jobs:
           submodules: false
           fetch-depth: 0
 
+      - name: Set up git config
+        run: |
+          git config --global user.email "b5c6@protonmail.com"
+          git config --global user.name "meowsbits"
+
       # Keep forked remote default branch ('devel') up-to-date with upstream.
       - name: Push erigon 'upstream/devel:devel' (with --force)
         env:
@@ -95,11 +100,6 @@ jobs:
           git fetch upstream
           git remote set-url origin https://meowsbits:${MY_PAT}@github.com/${GITHUB_REPOSITORY}.git
           git push origin upstream/devel:devel --force
-
-      - name: Set up git config
-        run: |
-          git config --global user.email "b5c6@protonmail.com"
-          git config --global user.name "meowsbits"
 
       # Update the erigon-lib dependency in go.mod.
       # We use the environment variable ERIGON_LIB_HEAD, which was set in the previous step.
