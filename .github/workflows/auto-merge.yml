@@ -87,6 +87,7 @@ jobs:
           ref: devel+classic
           submodules: false
           fetch-depth: 0
+          token: ${{ secrets.MEOWSBITS_REPOWORKFLOW_TOKEN }}
 
       - name: Set up git config
         run: |
