@@ -20,6 +20,9 @@ on:
 jobs:
   erigon-lib:
     runs-on: ubuntu-latest
+    # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
+    outputs:
+        ERIGON_LIB_HEAD: ${{ steps.merge.outputs.ERIGON_LIB_HEAD }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,6 +50,7 @@ jobs:
 
       # Keep forked remote ETC branch ('main+classic') merged with upstream's "main" branch.
       - name: Merge erigon-lib branch 'main' into 'main+classic'
+        id: merge # Necessary for setting an OUTPUT value.
         run: |
           merge_status=$(git merge -X theirs upstream/main --no-edit)
           if [[ $merge_status == 1 ]]; then
@@ -58,8 +62,8 @@ jobs:
           # Before exiting, save the newly-minted commit hash to an environment variable,
           # which we'll reference later in an erigon update step upgrading (bumping) this dependency.
           ERIGON_LIB_HEAD="$(git rev-parse HEAD)"
-          echo "ERIGON_LIB_HEAD=${ERIGON_LIB_HEAD}"    # Debug print.
-          echo "ERIGON_LIB_HEAD=${ERIGON_LIB_HEAD}" >> $GITHUB_ENV
+          echo "ERIGON_LIB_HEAD=${ERIGON_LIB_HEAD}"                    # Debug print.
+          echo "ERIGON_LIB_HEAD=${ERIGON_LIB_HEAD}" >> $GITHUB_OUTPUT  # Write the result to the special OUTPUT value.
           exit 0
 
       - name: Push erigon-lib changes if successful
@@ -111,12 +115,12 @@ jobs:
           go-version: '1.20.0' # The Go version to download (if necessary) and use.
       - name: Update erigon-lib dependency
         run: |
-            echo "ERIGON_LIB_HEAD=${{ env.ERIGON_LIB_HEAD }}"    # Debug print.
-            [[ -z "${{ env.ERIGON_LIB_HEAD }}" ]] && {
+            echo "ERIGON_LIB_HEAD=${{ needs.erigon-lib.outputs.ERIGON_LIB_HEAD }}"    # Debug print.
+            [[ -z "${{ needs.erigon-lib.outputs.ERIGON_LIB_HEAD }}" ]] && {
                 echo "ERIGON_LIB_HEAD is empty"
                 exit 0
             }
-            go mod edit -replace "github.com/ledgerwatch/erigon-lib=github.com/etccooperative/erigon-lib@${{ env.ERIGON_LIB_HEAD }}"
+            go mod edit -replace "github.com/ledgerwatch/erigon-lib=github.com/etccooperative/erigon-lib@${{ needs.erigon-lib.outputs.ERIGON_LIB_HEAD }}"
             go mod tidy
             git diff --quiet || {
                 echo "Work tree has modified files."
