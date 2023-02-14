@@ -36,7 +36,7 @@ jobs:
       # Keep forked remote default branch ('main') up-to-date with upstream.
       - name: Push erigon-lib 'upstream/main:main' (with --force)
         env:
-          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+          MY_PAT: ${{ secrets.MEOWSBITS_REPOWORKFLOW_TOKEN }}
         run: |
           git remote add upstream https://github.com/ledgerwatch/erigon-lib.git
           git fetch upstream
@@ -65,7 +65,7 @@ jobs:
       - name: Push erigon-lib changes if successful
         if: success()
         env:
-          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+          MY_PAT: ${{ secrets.MEOWSBITS_REPOWORKFLOW_TOKEN }}
         run: |
           git remote set-url origin https://meowsbits:${MY_PAT}@github.com/etccooperative/erigon-lib.git
           git push origin main+classic
@@ -96,7 +96,7 @@ jobs:
       # Keep forked remote default branch ('devel') up-to-date with upstream.
       - name: Push erigon 'upstream/devel:devel' (with --force)
         env:
-          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+          MY_PAT: ${{ secrets.MEOWSBITS_REPOWORKFLOW_TOKEN }}
         run: |
           git remote add upstream https://github.com/ledgerwatch/erigon.git
           git fetch upstream
@@ -136,7 +136,7 @@ jobs:
       - name: Push erigon changes if successful
         if: success()
         env:
-          MY_PAT: ${{ secrets.MEOWSBITS_REPO_TOKEN }}
+          MY_PAT: ${{ secrets.MEOWSBITS_REPOWORKFLOW_TOKEN }}
         run: |
           git remote set-url origin https://meowsbits:${MY_PAT}@github.com/${GITHUB_REPOSITORY}.git
           git push origin devel+classic
