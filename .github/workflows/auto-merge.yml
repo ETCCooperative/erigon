@@ -30,7 +30,6 @@ jobs:
 
       - name: Set up git config
         run: |
-          git config --global --unset-all http.https://github.com/.extraheader # https://stackoverflow.com/a/69979203
           git config --global user.email "b5c6@protonmail.com"
           git config --global user.name "meowsbits"
 
@@ -42,6 +41,8 @@ jobs:
           git remote add upstream https://github.com/ledgerwatch/erigon-lib.git
           git fetch upstream
           git remote set-url origin https://meowsbits:${MY_PAT}@github.com/etccooperative/erigon-lib.git
+          # 'Github Actions workflow push to another repo' @ https://stackoverflow.com/a/69979203
+          git config --unset-all http.https://github.com/.extraheader
           git push origin upstream/main:main --force
 
       # Keep forked remote ETC branch ('main+classic') merged with upstream's "main" branch.
