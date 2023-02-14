@@ -30,6 +30,7 @@ jobs:
 
       - name: Set up git config
         run: |
+          git config --global --unset-all http.https://github.com/.extraheader # https://stackoverflow.com/a/69979203
           git config --global user.email "b5c6@protonmail.com"
           git config --global user.name "meowsbits"
 
