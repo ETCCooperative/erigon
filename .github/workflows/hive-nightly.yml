@@ -7,6 +7,7 @@ on:
   
 jobs:
   hive:
+    if: github.repository == 'ledgerwatch/erigon'
     runs-on: ubuntu-latest
     steps:
       - uses: AutoModality/action-clean@v1
