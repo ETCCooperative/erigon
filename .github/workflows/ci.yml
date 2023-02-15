@@ -2,16 +2,14 @@ name: CI
 on:
   push:
     branches:
-      - devel
+      - devel+classic
       - alpha
       - stable
-      - devel+classic
   pull_request:
     branches:
-      - devel
+      - devel+classic
       - alpha
       - stable
-      - devel+classic
     types:
       - opened
       - reopened
