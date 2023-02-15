@@ -2,12 +2,12 @@ name: CI
 on:
   push:
     branches:
-      - devel+classic
+      - 'devel\+classic'
       - alpha
       - stable
   pull_request:
     branches:
-      - devel+classic
+      - 'devel\+classic'
       - alpha
       - stable
     types:
