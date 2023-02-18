@@ -7,7 +7,7 @@ require (
 	github.com/ledgerwatch/erigon-snapshot v1.1.1-0.20230215122237-5e33484e9be4
 	github.com/ledgerwatch/log/v3 v3.7.0
 	github.com/ledgerwatch/secp256k1 v1.0.0
-	github.com/ledgerwatch/trackerslist v1.0.0 // indirect
+	github.com/ledgerwatch/trackerslist v1.1.0 // indirect
 	github.com/torquem-ch/mdbx-go v0.27.5
 )
 
@@ -264,4 +264,4 @@ require (
 
 replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.31.12
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230216123234-c38e51155b84
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230218001805-485c7a1e3358

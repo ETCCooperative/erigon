@@ -235,8 +235,8 @@ github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymF
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/etccooperative/erigon-lib v0.0.0-20230216123234-c38e51155b84 h1:tOxH62CNnW3bYfFJsKw+0pn9p0d+MMGfRi0jHlrGka8=
-github.com/etccooperative/erigon-lib v0.0.0-20230216123234-c38e51155b84/go.mod h1:OXgMDuUo2lZ3NpH29ZvMYbk+LxFd5ffDl2Z2mGMuY/I=
+github.com/etccooperative/erigon-lib v0.0.0-20230218001805-485c7a1e3358 h1:xKhOnEyNxi8sfd0YXHcph8wPzdInwTNfSO2ejL6oYs0=
+github.com/etccooperative/erigon-lib v0.0.0-20230218001805-485c7a1e3358/go.mod h1:K2zoMM6ZeLopITKZDrOvzJBtApmw9bPz2RnhxW6jqSc=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c h1:CndMRAH4JIwxbW8KYq6Q+cGWcGHz0FjGR3QqcInWcW0=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c/go.mod h1:AzA8Lj6YtixmJWL+wkKoBGsLWy9gFrAzi4g+5bCKwpY=
@@ -517,8 +517,8 @@ github.com/ledgerwatch/log/v3 v3.7.0 h1:aFPEZdwZx4jzA3+/Pf8wNDN5tCI0cIolq/kfvgcM
 github.com/ledgerwatch/log/v3 v3.7.0/go.mod h1:J2Jl6zV/58LeA6LTaVVnCGyf1/cYYSEOOLHY4ZN8S2A=
 github.com/ledgerwatch/secp256k1 v1.0.0 h1:Usvz87YoTG0uePIV8woOof5cQnLXGYa162rFf3YnwaQ=
 github.com/ledgerwatch/secp256k1 v1.0.0/go.mod h1:SPmqJFciiF/Q0mPt2jVs2dTr/1TZBTIA+kPMmKgBAak=
-github.com/ledgerwatch/trackerslist v1.0.0 h1:6gnQu93WCTL4jPcdmc8UEmw56Cb8IFQHLGnevfIeLwo=
-github.com/ledgerwatch/trackerslist v1.0.0/go.mod h1:pCC+eEw8izNcnBBiSwvIq8kKsxDLInAafSW275jqFrg=
+github.com/ledgerwatch/trackerslist v1.1.0 h1:eKhgeURD9x/J3qzMnL6C0e0cLy6Ld7Ck/VR/yF+7cZQ=
+github.com/ledgerwatch/trackerslist v1.1.0/go.mod h1:wWU/V810cpsEl//o49ebwAWf0BL0WOJiu/577L4IVok=
 github.com/leodido/go-urn v1.2.0 h1:hpXL4XnriNwQ/ABnpepYM/1vCLWNDfUNts8dX3xTG6Y=
 github.com/leodido/go-urn v1.2.0/go.mod h1:+8+nEpDfqqsY+g338gtMEUOtuK+4dEMhiQEgxpxOKII=
 github.com/libp2p/go-buffer-pool v0.1.0 h1:oK4mSFcQz7cTQIfqbe4MIj9gLW+mnanjyFtc6cdF0Y8=
