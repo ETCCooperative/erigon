@@ -1,8 +1,6 @@
 # Erigon +ETC 
 
-This repository forks the upstream default `devel` branch, adding support for the Ethereum Classic network.\
-This repository's default branch is `devel+classic`.
-A comparison of the two branches is visible as [`devel..devel+classic`](https://github.com/ETCCooperative/erigon/compare/devel..devel+classic).
+Erigon is an implementation of Ethereum (execution client with light client for consensus layer), on the efficiency frontier. [Archive Node](https://ethereum.org/en/developers/docs/nodes-and-clients/archive-nodes/#what-is-an-archive-node) by default.
 
 The upstream README has been relocated [here](./README.ledgerwatch.md).
 See that document for more information about the project, including
