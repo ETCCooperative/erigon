@@ -8,9 +8,80 @@ build and usage instructions.
 
 ## Running
 
-To run `erigon` on ETC use the following.
-```bash
-erigon --chain=classic [other options]
+<!--ts-->
+
+- [System Requirements](#system-requirements)
+- [Usage](#usage)
+    + [Getting Started](#getting-started)
+    + [Logging](#logging)
+    + [Testnets](#testnets)
+    + [Block Production](#block-production-pow-miner-or-pos-validator)
+    + [Windows](#windows)
+    + [GoDoc](https://godoc.org/github.com/ledgerwatch/erigon)
+    + [Beacon Chain](#beacon-chain-consensus-layer)
+    + [Dev Chain](#dev-chain)
+
+- [Key features](#key-features)
+    + [More Efficient State Storage](#more-efficient-state-storage)
+    + [Faster Initial Sync](#faster-initial-sync)
+    + [JSON-RPC daemon](#json-rpc-daemon)
+    + [Run all components by docker-compose](#run-all-components-by-docker-compose)
+    + [Grafana dashboar god](#grafana-dashboard)
+- [Documentation](#documentation)
+- [FAQ](#faq)
+- [Getting in touch](#getting-in-touch)
+    + [Erigon Discord Server](#erigon-discord-server)
+    + [Reporting security issues/concerns](#reporting-security-issues/concerns)
+    + [Team](#team)
+- [Known issues](#known-issues)
+    + [`htop` shows incorrect memory usage](#htop-shows-incorrect-memory-usage)
+
+<!--te-->
+
+**Disclaimer**: this software is currently a tech preview. We will do our best to keep it stable and make no breaking
+changes but we don't guarantee anything. Things can and will break.
+
+**Important defaults**: Erigon is an Archive Node by default (to remove history see: `--prune` flags in `erigon --help`). We don't allow change this flag after first start.
+
+<code>In-depth links are marked by the microscope sign (🔬) </code>
+
+System Requirements
+===================
+
+* For an Archive node of Ethereum Mainnet we recommend >=3TB storage space: 1.8TB state (as of March 2022),
+  200GB temp files (can symlink or mount folder `<datadir>/temp` to another disk). Ethereum Mainnet Full node (
+  see `--prune*` flags): 400Gb (April 2022).
+
+* Goerli Full node (see `--prune*` flags): 189GB on Beta, 114GB on Alpha (April 2022).
+
+* Gnosis Chain Archive: 370GB (January 2023).
+
+* BSC Archive: 7TB. BSC Full: 1TB.
+
+* Polygon Mainnet Archive: 5TB. Polygon Mumbai Archive: 1TB.
+
+SSD or NVMe. Do not recommend HDD - on HDD Erigon will always stay N blocks behind chain tip, but not fall behind.
+Bear in mind that SSD performance deteriorates when close to capacity.
+
+RAM: >=16GB, 64-bit architecture.
+
+[Golang version >= 1.19](https://golang.org/doc/install); GCC 10+ or Clang; On Linux: kernel > v4
+
+<code>🔬 more details on disk storage [here](https://erigon.substack.com/p/disk-footprint-changes-in-new-erigon?s=r)
+and [here](https://ledgerwatch.github.io/turbo_geth_release.html#Disk-space).</code>
+
+Usage
+=====
+
+### Getting Started
+
+For building the latest stable release (this will be suitable for most users just wanting to run a node):
+
+```sh
+git clone --branch stable --single-branch https://github.com/ledgerwatch/erigon.git
+cd erigon
+make erigon
+./build/bin/erigon
 ```
 
 Chain data is located by default in `~/.local/share/erigon/classic/`.\
@@ -131,7 +202,7 @@ Windows users may run erigon in 3 possible ways:
   build on windows :
     * [Git](https://git-scm.com/downloads) for Windows must be installed. If you're cloning this repository is very
       likely you already have it
-    * [GO Programming Language](https://golang.org/dl/) must be installed. Minimum required version is 1.18
+    * [GO Programming Language](https://golang.org/dl/) must be installed. Minimum required version is 1.19
     * GNU CC Compiler at least version 10 (is highly suggested that you install `chocolatey` package manager - see
       following point)
     * If you need to build MDBX tools (i.e. `.\wmake.ps1 db-tools`)
