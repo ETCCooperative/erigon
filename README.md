@@ -1,6 +1,8 @@
 # Erigon +ETC 
 
-Erigon is an implementation of Ethereum (execution client with light client for consensus layer), on the efficiency frontier. [Archive Node](https://ethereum.org/en/developers/docs/nodes-and-clients/archive-nodes/#what-is-an-archive-node) by default.
+Erigon is an implementation of Ethereum (execution client with light client for consensus layer), on the efficiency
+frontier. [Archive Node](https://ethereum.org/en/developers/docs/nodes-and-clients/archive-nodes/#what-is-an-archive-node)
+by default.
 
 The upstream README has been relocated [here](./README.ledgerwatch.md).
 See that document for more information about the project, including
@@ -41,7 +43,8 @@ build and usage instructions.
 **Disclaimer**: this software is currently a tech preview. We will do our best to keep it stable and make no breaking
 changes but we don't guarantee anything. Things can and will break.
 
-**Important defaults**: Erigon is an Archive Node by default (to remove history see: `--prune` flags in `erigon --help`). We don't allow change this flag after first start.
+**Important defaults**: Erigon is an Archive Node by default (to remove history see: `--prune` flags
+in `erigon --help`). We don't allow change this flag after first start.
 
 <code>In-depth links are marked by the microscope sign (🔬) </code>
 
@@ -56,9 +59,9 @@ System Requirements
 
 * Gnosis Chain Archive: 370GB (January 2023).
 
-* BSC Archive: 7TB. BSC Full: 1TB.
+* BSC Archive: 7TB. BSC Full: 1TB. (April 2022).
 
-* Polygon Mainnet Archive: 5TB. Polygon Mumbai Archive: 1TB.
+* Polygon Mainnet Archive: 5TB. Polygon Mumbai Archive: 1TB. (April 2022).
 
 SSD or NVMe. Do not recommend HDD - on HDD Erigon will always stay N blocks behind chain tip, but not fall behind.
 Bear in mind that SSD performance deteriorates when close to capacity.
@@ -98,35 +101,42 @@ DOCKER_BUILDKIT=1 docker build -t erigon .
 docker run -p 30303:30303 [more options] erigon erigon --chain classic [more options]
 ```
 
-## Developer Implementation
+Default `--snapshots` for `mainnet`, `goerli`, `gnosis`, `bsc`. Other networks now have default `--snapshots=false`.
+Increase
+download speed by flag `--torrent.download.rate=20mb`. <code>🔬 See [Downloader docs](./cmd/downloader/readme.md)</code>
 
 The Ethereum Classic chain configuration is defined in [./params/chainspecs/classic.json](./params/chainspecs/classic.json).
 
-This repository depends heavily on `erigon-lib`, a "common" library that is rewritten from scratch and licensed under Apache 2.0.
-The forked version of this lib on which this repository depends is located at [etccooperative/erigon-lib](https://github.com/etccooperative/erigon-lib). Chain configuration logic is, for the most part, defined there; including many of the additional ETC `*Config` methods.
+Use `--chain=gnosis` for [Gnosis Chain](https://www.gnosis.io/), `--chain=bor-mainnet` for Polygon Mainnet,
+and `--chain=mumbai` for Polygon Mumbai.
+For Gnosis Chain you need a [Consensus Layer](#beacon-chain-consensus-layer) client alongside
+Erigon (https://docs.gnosischain.com/node/guide/beacon).
 
 ### Upstream Maintenance
 
 To maintain this branch, we periodically merge the upstream `devel` branch into `devel+classic`.
 This has been automated by a GitHub Action, which runs nightly.
 
-### File naming
-
+- chaindata: recent blocks, state, recent state history. low-latency disk recommended.
+- snapshots: old blocks, old state history. can symlink/mount it to cheaper disk. mostly immutable.
+- temp: can grow to ~100gb, but usually empty. can symlink/mount it to cheaper disk.
+- txpool: pending transactions. safe to remove.
+- nodes:  p2p peers. safe to remove.
 
 ### Logging
 
-_Flags:_ 
+_Flags:_
 
-  - `verbosity`
-  - `log.console.verbosity` (overriding alias for `verbosity`)
-  - `log.json`
-  - `log.console.json` (alias for `log.json`)
-  - `log.dir.path`
-  - `log.dir.verbosity`
-  - `log.dir.json`
+- `verbosity`
+- `log.console.verbosity` (overriding alias for `verbosity`)
+- `log.json`
+- `log.console.json` (alias for `log.json`)
+- `log.dir.path`
+- `log.dir.verbosity`
+- `log.dir.json`
 
-
-In order to log only to the stdout/stderr the `--verbosity` (or `log.console.verbosity`) flag can be used to supply an int value specifying the highest output log level:
+In order to log only to the stdout/stderr the `--verbosity` (or `log.console.verbosity`) flag can be used to supply an
+int value specifying the highest output log level:
 
 ```
   LvlCrit = 0
@@ -137,9 +147,12 @@ In order to log only to the stdout/stderr the `--verbosity` (or `log.console.ver
   LvlTrace = 5
 ```
 
-To set an output dir for logs to be collected on disk, please set `--log.dir.path`. The flag `--log.dir.verbosity` is also available to control the verbosity of this logging, with the same int value as above, or the string value e.g. 'debug' or 'info'. Default verbosity is 'debug' (4), for disk logging.
+To set an output dir for logs to be collected on disk, please set `--log.dir.path`. The flag `--log.dir.verbosity` is
+also available to control the verbosity of this logging, with the same int value as above, or the string value e.g. '
+debug' or 'info'. Default verbosity is 'debug' (4), for disk logging.
 
-Log format can be set to json by the use of the boolean flags `log.json` or `log.console.json`, or for the disk output `--log.dir.json`.
+Log format can be set to json by the use of the boolean flags `log.json` or `log.console.json`, or for the disk
+output `--log.dir.json`.
 
 ### Modularity
 
@@ -151,7 +164,8 @@ How to start Erigon's services as separated processes, see in [docker-compose.ym
 
 ### Embedded Consensus Layer
 
-By default, on Ethereum Mainnet, Görli, and Sepolia, the Engine API is disabled in favour of the Erigon native Embedded Consensus Layer.
+By default, on Ethereum Mainnet, Görli, and Sepolia, the Engine API is disabled in favour of the Erigon native Embedded
+Consensus Layer.
 If you want to use an external Consensus Layer, run Erigon with flag `--externalcl`.
 _Warning:_ Staking (block production) is not possible with the embedded CL – use `--externalcl` instead.
 
@@ -369,7 +383,8 @@ Examples of stages are:
 
 ### JSON-RPC daemon
 
-Most of Erigon's components (txpool, rpcdaemon, snapshots downloader, sentry, ...) can work inside Erigon and as independent process.
+Most of Erigon's components (txpool, rpcdaemon, snapshots downloader, sentry, ...) can work inside Erigon and as
+independent process.
 
 To enable built-in RPC server: `--http` and `--ws` (sharing same port with http)
 
@@ -492,7 +507,8 @@ Windows support for docker-compose is not ready yet. Please help us with .ps1 po
 
 `docker-compose up prometheus grafana`, [detailed docs](./cmd/prometheus/Readme.md).
 
-### 
+###  
+
 old data
 
 Disabled by default. To enable see `./build/bin/erigon --help` for flags `--prune`
@@ -558,12 +574,11 @@ Port
 
 #### `sentinel` ports
 
-| Port  | Protocol  |     Purpose      | Expose  |
-|:-----:|:---------:|:----------------:|:-------:|
-| 4000  |    UDP    |     Peering      | Public  |
-| 4001  |    TCP    |     Peering      | Public  |
-| 7777  |    TCP    | gRPC Connections | Private |
-
+| Port | Protocol |     Purpose      | Expose  |
+|:----:|:--------:|:----------------:|:-------:|
+| 4000 |   UDP    |     Peering      | Public  |
+| 4001 |   TCP    |     Peering      | Public  |
+| 7777 |   TCP    | gRPC Connections | Private |
 
 #### Other ports
 
@@ -577,7 +592,8 @@ you'll have to change one if you want to run both at the same time. use `--help`
 
 Reserved for future use: **gRPC ports**: `9092` consensus engine, `9093` snapshot downloader, `9094` TxPool
 
-Hetzner may want strict firewall rules, like: 
+Hetzner may want strict firewall rules, like:
+
 ```
 0.0.0.0/8             "This" Network             RFC 1122, Section 3.2.1.3
 10.0.0.0/8            Private-Use Networks       RFC 1918
