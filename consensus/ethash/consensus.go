@@ -28,6 +28,7 @@ import (
 	"github.com/holiman/uint256"
 	"github.com/ledgerwatch/erigon-lib/chain"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
+	"github.com/ledgerwatch/erigon/consensus/ethash/ethashcfg"
 	"github.com/ledgerwatch/log/v3"
 	"golang.org/x/crypto/sha3"
 
@@ -517,8 +518,9 @@ func (ethash *Ethash) verifySeal(header *types.Header, fulldag bool) error { //n
 	// If slow-but-light PoW verification was requested (or DAG not yet ready), use an ethash cache
 	if !fulldag {
 		cache := ethash.cache(number)
-		size := datasetSize(cache.epoch)
-		if ethash.config.PowMode == ModeTest {
+
+		size := datasetSize(number)
+		if ethash.config.PowMode == ethashcfg.ModeTest {
 			size = 32 * 1024
 		}
 		digest, result = hashimotoLight(size, cache.cache, ethash.SealHash(header).Bytes(), header.Nonce.Uint64())

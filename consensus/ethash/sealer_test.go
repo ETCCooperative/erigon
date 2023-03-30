@@ -27,6 +27,7 @@ import (
 
 	"github.com/goccy/go-json"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
+	"github.com/ledgerwatch/erigon/consensus/ethash/ethashcfg"
 
 	"github.com/ledgerwatch/erigon/turbo/testlog"
 
@@ -100,8 +101,8 @@ func TestRemoteNotifyFull(t *testing.T) {
 	defer server.Close()
 
 	// Create the custom ethash engine.
-	config := Config{
-		PowMode:    ModeTest,
+	config := ethashcfg.Config{
+		PowMode:    ethashcfg.ModeTest,
 		NotifyFull: true,
 		Log:        testlog.Logger(t, log.LvlWarn),
 	}
@@ -198,8 +199,8 @@ func TestRemoteMultiNotifyFull(t *testing.T) {
 	defer server.Close()
 
 	// Create the custom ethash engine.
-	config := Config{
-		PowMode:    ModeTest,
+	config := ethashcfg.Config{
+		PowMode:    ethashcfg.ModeTest,
 		NotifyFull: true,
 		Log:        testlog.Logger(t, log.LvlWarn),
 	}
