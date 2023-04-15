@@ -59,8 +59,6 @@ System Requirements
 
 * Gnosis Chain Archive: 370GB (January 2023).
 
-* BSC Archive: 7TB. BSC Full: 1TB. (April 2022).
-
 * Polygon Mainnet Archive: 5TB. Polygon Mumbai Archive: 1TB. (April 2022).
 
 SSD or NVMe. Do not recommend HDD - on HDD Erigon will always stay N blocks behind chain tip, but not fall behind.
@@ -101,7 +99,7 @@ DOCKER_BUILDKIT=1 docker build -t erigon .
 docker run -p 30303:30303 [more options] erigon erigon --chain classic [more options]
 ```
 
-Default `--snapshots` for `mainnet`, `goerli`, `gnosis`, `bsc`. Other networks now have default `--snapshots=false`.
+Default `--snapshots` for `mainnet`, `goerli`, `gnosis`, `chiado`. Other networks now have default `--snapshots=false`.
 Increase
 download speed by flag `--torrent.download.rate=20mb`. <code>🔬 See [Downloader docs](./cmd/downloader/readme.md)</code>
 

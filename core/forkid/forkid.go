@@ -246,15 +246,11 @@ func GatherForks(config *chain.Config) (heightForks []uint64, timeForks []uint64
 			}
 		}
 	}
-	if config.IsClassic() {
-		heightForks = append(heightForks,
-			3_000_000,  // Spurious Dragon. ETC implements only "half" of the EIPs for this fork. Later half of EIPs happen in ETC's Byzantium=XXX.
-			5_000_000,  // ECIP1017 Monetary Policy
-			5_900_000,  // ECIP1010 Difficulty Bomb Disposal
-			11_700_000, // ECIP1099: Etchash
-			14_525_000, // Partial London; only "half" of EIPs are adopted (not EIP-1559).
-		)
+
+	if config.Aura != nil && config.Aura.PosdaoTransition != nil {
+		heightForks = append(heightForks, *config.Aura.PosdaoTransition)
 	}
+
 	// Sort the fork block numbers & times to permit chronological XOR
 	slices.Sort(heightForks)
 	slices.Sort(timeForks)
