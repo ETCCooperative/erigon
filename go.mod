@@ -23,9 +23,9 @@ require (
 	github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3
 	github.com/c2h5oh/datasize v0.0.0-20220606134207-859f65c6625b
-	github.com/consensys/gnark-crypto v0.9.0
+	github.com/consensys/gnark-crypto v0.10.0
 	github.com/crate-crypto/go-ipa v0.0.0-20221111143132-9aa5d42120bc
-	github.com/crate-crypto/go-kzg-4844 v0.0.0-20230405223534-4364e2f9d209
+	github.com/crate-crypto/go-kzg-4844 v0.2.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deckarep/golang-set v1.8.0
 	github.com/deckarep/golang-set/v2 v2.3.0
@@ -124,7 +124,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/benbjohnson/immutable v0.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bits-and-blooms/bitset v1.2.2 // indirect
+	github.com/bits-and-blooms/bitset v1.5.0 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -273,4 +273,4 @@ require (
 
 replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.31.12
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230501001811-a1d8fe2a34fe
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230504001619-cc06530c4a7d

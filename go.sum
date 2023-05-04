@@ -122,8 +122,8 @@ github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+Ce
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bits-and-blooms/bitset v1.2.0/go.mod h1:gIdJ4wp64HaoK2YrL1Q5/N7Y16edYb8uY+O0FJTyyDA=
-github.com/bits-and-blooms/bitset v1.2.2 h1:J5gbX05GpMdBjCvQ9MteIg2KKDExr7DrgK+Yc15FvIk=
-github.com/bits-and-blooms/bitset v1.2.2/go.mod h1:gIdJ4wp64HaoK2YrL1Q5/N7Y16edYb8uY+O0FJTyyDA=
+github.com/bits-and-blooms/bitset v1.5.0 h1:NpE8frKRLGHIcEzkR+gZhiioW1+WbYV6fKwD6ZIpQT8=
+github.com/bits-and-blooms/bitset v1.5.0/go.mod h1:gIdJ4wp64HaoK2YrL1Q5/N7Y16edYb8uY+O0FJTyyDA=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
 github.com/bradfitz/iter v0.0.0-20140124041915-454541ec3da2/go.mod h1:PyRFw1Lt2wKX4ZVSQ2mk+PeDa1rxyObEDlApuIsUKuo=
 github.com/bradfitz/iter v0.0.0-20190303215204-33e6a9893b0c/go.mod h1:PyRFw1Lt2wKX4ZVSQ2mk+PeDa1rxyObEDlApuIsUKuo=
@@ -145,8 +145,8 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/consensys/bavard v0.1.13 h1:oLhMLOFGTLdlda/kma4VOJazblc7IM5y5QPd2A/YjhQ=
 github.com/consensys/bavard v0.1.13/go.mod h1:9ItSMtA/dXMAiL7BG6bqW2m3NdSEObYWoH223nGHukI=
-github.com/consensys/gnark-crypto v0.9.0 h1:xspjHTygkgHmX4Behn00VJUTfEGvs+e6lFlfERfA28E=
-github.com/consensys/gnark-crypto v0.9.0/go.mod h1:CkbdF9hbRidRJYMRzmfX8TMOr95I2pYXRHF18MzRrvA=
+github.com/consensys/gnark-crypto v0.10.0 h1:zRh22SR7o4K35SoNqouS9J/TKHTyU2QWaj5ldehyXtA=
+github.com/consensys/gnark-crypto v0.10.0/go.mod h1:Iq/P3HHl0ElSjsg2E1gsMwhAyxnxoKK5nVyZKd+/KhU=
 github.com/containerd/cgroups v0.0.0-20201119153540-4cbc285b3327/go.mod h1:ZJeTFisyysqgcCdecO57Dj79RfL0LNeGiFUqLYQRYLE=
 github.com/containerd/cgroups v1.1.0 h1:v8rEWFl6EoqHB+swVNjVoCJE8o3jX7e8nqBGPLaDFBM=
 github.com/containerd/cgroups v1.1.0/go.mod h1:6ppBcbh/NOOUU+dMKrykgaBnK9lCIBxHqJDGwsa1mIw=
@@ -160,8 +160,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHH
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/crate-crypto/go-ipa v0.0.0-20221111143132-9aa5d42120bc h1:mtR7MuscVeP/s0/ERWA2uSr5QOrRYy1pdvZqG1USfXI=
 github.com/crate-crypto/go-ipa v0.0.0-20221111143132-9aa5d42120bc/go.mod h1:gFnFS95y8HstDP6P9pPwzrxOOC5TRDkwbM+ao15ChAI=
-github.com/crate-crypto/go-kzg-4844 v0.0.0-20230405223534-4364e2f9d209 h1:OnTdosxWDRxchZa7uOT8zz1sm3TZQdCiqtj69wYGnH8=
-github.com/crate-crypto/go-kzg-4844 v0.0.0-20230405223534-4364e2f9d209/go.mod h1:bsF9NlLDLBdRmnU0hiImPGjwoDSrjLRXKAP9vVT6IsI=
+github.com/crate-crypto/go-kzg-4844 v0.2.0 h1:UVuHOE+5tIWrim4zf/Xaa43+MIsDCPyW76QhUpiMGj4=
+github.com/crate-crypto/go-kzg-4844 v0.2.0/go.mod h1:SBP7ikXEgDnUPONgm33HtuDZEDtWa3L4QtN1ocJSEQ4=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -208,8 +208,8 @@ github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymF
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/etccooperative/erigon-lib v0.0.0-20230501001811-a1d8fe2a34fe h1:vOgtJOV3vXFJmrF9fPRoDydZiH13L574g3Ep8zyMu8A=
-github.com/etccooperative/erigon-lib v0.0.0-20230501001811-a1d8fe2a34fe/go.mod h1:NMvXxA0hP92i39cdY4f79JYLfi7nJjWppX9Ati2KPbs=
+github.com/etccooperative/erigon-lib v0.0.0-20230504001619-cc06530c4a7d h1:k8L/HZCg8x4ZWmEHNpSAILx+xfM8a1OK1bAkkIUPRy8=
+github.com/etccooperative/erigon-lib v0.0.0-20230504001619-cc06530c4a7d/go.mod h1:FI75QtzEIarMlAJaeWZp6JlrOyehEtS7XOYamdFmdcg=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c h1:CndMRAH4JIwxbW8KYq6Q+cGWcGHz0FjGR3QqcInWcW0=
 github.com/fjl/gencodec v0.0.0-20220412091415-8bb9e558978c/go.mod h1:AzA8Lj6YtixmJWL+wkKoBGsLWy9gFrAzi4g+5bCKwpY=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
