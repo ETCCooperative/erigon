@@ -201,7 +201,7 @@ func (pi *PeerInfo) Remove() {
 	})
 }
 
-func (pi *PeerInfo) Async(f func()) {
+func (pi *PeerInfo) Async(f func(), logger log.Logger) {
 	pi.lock.Lock()
 	defer pi.lock.Unlock()
 	if pi.tasks == nil {
@@ -224,7 +224,7 @@ func (pi *PeerInfo) Async(f func()) {
 				default:
 				}
 			}
-			log.Debug("slow peer or too many requests, dropping its old requests", "name", pi.peer.Name())
+			logger.Debug("slow peer or too many requests, dropping its old requests", "name", pi.peer.Name())
 		}
 	}
 }
@@ -334,6 +334,7 @@ func runPeer(
 	peerInfo *PeerInfo,
 	send func(msgId proto_sentry.MessageId, peerID [64]byte, b []byte),
 	hasSubscribers func(msgId proto_sentry.MessageId) bool,
+	logger log.Logger,
 ) error {
 	printTime := time.Now().Add(time.Minute)
 	peerPrinted := false
@@ -344,13 +345,13 @@ func runPeer(
 		default:
 		}
 		if peerPrinted {
-			log.Trace("Peer disconnected", "id", peerID, "name", peerInfo.peer.Fullname())
+			logger.Trace("Peer disconnected", "id", peerID, "name", peerInfo.peer.Fullname())
 		}
 	}()
 	for {
 		if !peerPrinted {
 			if time.Now().After(printTime) {
-				log.Trace("Peer stable", "id", peerID, "name", peerInfo.peer.Fullname())
+				logger.Trace("Peer stable", "id", peerID, "name", peerInfo.peer.Fullname())
 				peerPrinted = true
 			}
 		}
@@ -381,7 +382,7 @@ func runPeer(
 
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.BlockHeadersMsg:
@@ -391,7 +392,7 @@ func runPeer(
 			givePermit = true
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.GetBlockBodiesMsg:
@@ -400,7 +401,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.BlockBodiesMsg:
@@ -410,7 +411,7 @@ func runPeer(
 			givePermit = true
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.GetNodeDataMsg:
@@ -423,7 +424,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 			// log.Info(fmt.Sprintf("[%s] GetNodeData", peerID))
@@ -433,7 +434,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 			// log.Info(fmt.Sprintf("[%s] GetReceiptsMsg", peerID))
@@ -443,7 +444,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 			// log.Info(fmt.Sprintf("[%s] ReceiptsMsg", peerID))
@@ -453,7 +454,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			//log.Debug("NewBlockHashesMsg from", "peerId", fmt.Sprintf("%x", peerID)[:20], "name", peerInfo.peer.Name())
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
@@ -463,7 +464,7 @@ func runPeer(
 			}
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			//log.Debug("NewBlockMsg from", "peerId", fmt.Sprintf("%x", peerID)[:20], "name", peerInfo.peer.Name())
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
@@ -474,7 +475,7 @@ func runPeer(
 
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.GetPooledTransactionsMsg:
@@ -484,7 +485,7 @@ func runPeer(
 
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.TransactionsMsg:
@@ -494,7 +495,7 @@ func runPeer(
 
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case eth.PooledTransactionsMsg:
@@ -504,14 +505,14 @@ func runPeer(
 
 			b := make([]byte, msg.Size)
 			if _, err := io.ReadFull(msg.Payload, b); err != nil {
-				log.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
+				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
 		case 11:
 			// Ignore
 			// TODO: Investigate why BSC peers for eth/67 send these messages
 		default:
-			log.Error(fmt.Sprintf("[p2p] Unknown message code: %d, peerID=%x", msg.Code, peerID))
+			logger.Error(fmt.Sprintf("[p2p] Unknown message code: %d, peerID=%x", msg.Code, peerID))
 		}
 		msg.Discard()
 		peerInfo.ClearDeadlines(time.Now(), givePermit)
@@ -520,7 +521,7 @@ func runPeer(
 
 func grpcSentryServer(ctx context.Context, sentryAddr string, ss *GrpcServer, healthCheck bool) (*grpc.Server, error) {
 	// STARTING GRPC SERVER
-	log.Info("Starting Sentry gRPC server", "on", sentryAddr)
+	ss.logger.Info("Starting Sentry gRPC server", "on", sentryAddr)
 	listenConfig := net.ListenConfig{
 		Control: func(network, address string, _ syscall.RawConn) error {
 			log.Info("Sentry gRPC received connection", "via", network, "from", address)
@@ -544,17 +545,18 @@ func grpcSentryServer(ctx context.Context, sentryAddr string, ss *GrpcServer, he
 			defer healthServer.Shutdown()
 		}
 		if err1 := grpcServer.Serve(lis); err1 != nil {
-			log.Error("Sentry gRPC server fail", "err", err1)
+			ss.logger.Error("Sentry gRPC server fail", "err", err1)
 		}
 	}()
 	return grpcServer, nil
 }
 
-func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, readNodeInfo func() *eth.NodeInfo, cfg *p2p.Config, protocol uint) *GrpcServer {
+func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, readNodeInfo func() *eth.NodeInfo, cfg *p2p.Config, protocol uint, logger log.Logger) *GrpcServer {
 	ss := &GrpcServer{
 		ctx:          ctx,
 		p2p:          cfg,
 		peersStreams: NewPeersStreams(),
+		logger:       logger,
 	}
 
 	protocols := []uint{protocol}
@@ -577,10 +579,10 @@ func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, re
 				peerID := peer.Pubkey()
 				printablePeerID := hex.EncodeToString(peerID[:])[:20]
 				if ss.getPeer(peerID) != nil {
-					log.Trace("[p2p] peer already has connection", "peerId", printablePeerID)
+					logger.Trace("[p2p] peer already has connection", "peerId", printablePeerID)
 					return nil
 				}
-				log.Trace("[p2p] start with peer", "peerId", printablePeerID)
+				logger.Trace("[p2p] start with peer", "peerId", printablePeerID)
 
 				peerInfo := NewPeerInfo(peer, rw)
 				peerInfo.protocol = protocol
@@ -594,13 +596,13 @@ func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, re
 				})
 				if err != nil {
 					if errors.Is(err, NetworkIdMissmatchErr) || errors.Is(err, io.EOF) || errors.Is(err, p2p.ErrShuttingDown) {
-						log.Trace("[p2p] Handshake failure", "peer", printablePeerID, "err", err)
+						logger.Trace("[p2p] Handshake failure", "peer", printablePeerID, "err", err)
 					} else {
-						log.Debug("[p2p] Handshake failure", "peer", printablePeerID, "err", err)
+						logger.Debug("[p2p] Handshake failure", "peer", printablePeerID, "err", err)
 					}
 					return fmt.Errorf("[p2p]handshake to peer %s: %w", printablePeerID, err)
 				}
-				log.Trace("[p2p] Received status message OK", "peerId", printablePeerID, "name", peer.Name())
+				logger.Trace("[p2p] Received status message OK", "peerId", printablePeerID, "name", peer.Name())
 
 				err = runPeer(
 					ctx,
@@ -610,8 +612,9 @@ func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, re
 					peerInfo,
 					ss.send,
 					ss.hasSubscribers,
+					logger,
 				) // runPeer never returns a nil error
-				log.Trace("[p2p] error while running peer", "peerId", printablePeerID, "err", err)
+				logger.Trace("[p2p] error while running peer", "peerId", printablePeerID, "err", err)
 				ss.sendGonePeerToClients(gointerfaces.ConvertHashToH512(peerID))
 				return nil
 			},
@@ -630,7 +633,7 @@ func NewGrpcServer(ctx context.Context, dialCandidates func() enode.Iterator, re
 }
 
 // Sentry creates and runs standalone sentry
-func Sentry(ctx context.Context, dirs datadir.Dirs, sentryAddr string, discoveryDNS []string, cfg *p2p.Config, protocolVersion uint, healthCheck bool) error {
+func Sentry(ctx context.Context, dirs datadir.Dirs, sentryAddr string, discoveryDNS []string, cfg *p2p.Config, protocolVersion uint, healthCheck bool, logger log.Logger) error {
 	dir.MustExist(dirs.DataDir)
 
 	discovery := func() enode.Iterator {
@@ -640,7 +643,7 @@ func Sentry(ctx context.Context, dirs datadir.Dirs, sentryAddr string, discovery
 		}
 		return d
 	}
-	sentryServer := NewGrpcServer(ctx, discovery, func() *eth.NodeInfo { return nil }, cfg, protocolVersion)
+	sentryServer := NewGrpcServer(ctx, discovery, func() *eth.NodeInfo { return nil }, cfg, protocolVersion, logger)
 	sentryServer.discoveryDNS = discoveryDNS
 
 	grpcServer, err := grpcSentryServer(ctx, sentryAddr, sentryServer, healthCheck)
@@ -669,6 +672,7 @@ type GrpcServer struct {
 	messageStreamsLock   sync.RWMutex
 	peersStreams         *PeersStreams
 	p2p                  *p2p.Config
+	logger               log.Logger
 }
 
 func (ss *GrpcServer) rangePeers(f func(peerInfo *PeerInfo) bool) {
@@ -708,14 +712,14 @@ func (ss *GrpcServer) writePeer(logPrefix string, peerInfo *PeerInfo, msgcode ui
 			peerInfo.Remove()
 			ss.GoodPeers.Delete(peerInfo.ID())
 			if !errors.Is(err, p2p.ErrShuttingDown) {
-				log.Debug(logPrefix, "msgcode", msgcode, "err", err)
+				ss.logger.Debug(logPrefix, "msgcode", msgcode, "err", err)
 			}
 		} else {
 			if ttl > 0 {
 				peerInfo.AddDeadline(time.Now().Add(ttl))
 			}
 		}
-	})
+	}, ss.logger)
 }
 
 func (ss *GrpcServer) startSync(ctx context.Context, bestHash libcommon.Hash, peerID [64]byte) error {
@@ -750,7 +754,7 @@ func (ss *GrpcServer) PenalizePeer(_ context.Context, req *proto_sentry.Penalize
 	if ss.statusData != nil && peerInfo != nil && !peerInfo.peer.Info().Network.Static && !peerInfo.peer.Info().Network.Trusted {
 		ss.removePeer(peerID)
 		printablePeerID := hex.EncodeToString(peerID[:])[:8]
-		log.Debug("[p2p] Penalized peer", "peerId", printablePeerID, "name", peerInfo.peer.Name())
+		ss.logger.Debug("[p2p] Penalized peer", "peerId", printablePeerID, "name", peerInfo.peer.Name())
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -1098,7 +1102,7 @@ func (ss *GrpcServer) send(msgID proto_sentry.MessageId, peerID [64]byte, b []by
 		ch := ss.messageStreams[msgID][i]
 		ch <- req
 		if len(ch) > MessagesQueueSize/2 {
-			log.Debug("[sentry] consuming is slow, drop 50% of old messages", "msgID", msgID.String())
+			ss.logger.Debug("[sentry] consuming is slow, drop 50% of old messages", "msgID", msgID.String())
 			// evict old messages from channel
 			for j := 0; j < MessagesQueueSize/4; j++ {
 				select {
@@ -1146,7 +1150,7 @@ func (ss *GrpcServer) addMessagesStream(ids []proto_sentry.MessageId, ch chan *p
 
 const MessagesQueueSize = 1024 // one such queue per client of .Messages stream
 func (ss *GrpcServer) Messages(req *proto_sentry.MessagesRequest, server proto_sentry.Sentry_MessagesServer) error {
-	log.Trace("[Messages] new subscriber", "to", req.Ids)
+	ss.logger.Trace("[Messages] new subscriber", "to", req.Ids)
 	ch := make(chan *proto_sentry.InboundMessage, MessagesQueueSize)
 	defer close(ch)
 	clean := ss.addMessagesStream(req.Ids, ch)
@@ -1160,7 +1164,7 @@ func (ss *GrpcServer) Messages(req *proto_sentry.MessagesRequest, server proto_s
 			return nil
 		case in := <-ch:
 			if err := server.Send(in); err != nil {
-				log.Warn("Sending msg to core P2P failed", "msg", in.Id.String(), "err", err)
+				ss.logger.Warn("Sending msg to core P2P failed", "msg", in.Id.String(), "err", err)
 				return err
 			}
 		}
@@ -1176,13 +1180,13 @@ func (ss *GrpcServer) Close() {
 
 func (ss *GrpcServer) sendNewPeerToClients(peerID *proto_types.H512) {
 	if err := ss.peersStreams.Broadcast(&proto_sentry.PeerEvent{PeerId: peerID, EventId: proto_sentry.PeerEvent_Connect}); err != nil {
-		log.Warn("Sending new peer notice to core P2P failed", "err", err)
+		ss.logger.Warn("Sending new peer notice to core P2P failed", "err", err)
 	}
 }
 
 func (ss *GrpcServer) sendGonePeerToClients(peerID *proto_types.H512) {
 	if err := ss.peersStreams.Broadcast(&proto_sentry.PeerEvent{PeerId: peerID, EventId: proto_sentry.PeerEvent_Disconnect}); err != nil {
-		log.Warn("Sending gone peer notice to core P2P failed", "err", err)
+		ss.logger.Warn("Sending gone peer notice to core P2P failed", "err", err)
 	}
 }
 
