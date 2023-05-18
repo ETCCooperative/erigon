@@ -60,7 +60,7 @@ func importChain(cliCtx *cli.Context) error {
 	}
 
 	nodeCfg := turboNode.NewNodConfigUrfave(cliCtx, logger)
-	ethCfg := turboNode.NewEthConfigUrfave(cliCtx, nodeCfg)
+	ethCfg := turboNode.NewEthConfigUrfave(cliCtx, nodeCfg, logger)
 
 	stack := makeConfigNode(nodeCfg, logger)
 	defer stack.Close()
@@ -221,7 +221,7 @@ func InsertChain(ethereum *eth.Ethereum, chain *core.ChainPack, logger log.Logge
 	sentryControlServer.Hd.MarkAllVerified()
 
 	_, err := stages.StageLoopStep(ethereum.SentryCtx(), ethereum.ChainConfig(), ethereum.ChainDB(), ethereum.StagedSync(), ethereum.Notifications(),
-		initialCycle, sentryControlServer.UpdateHead, logger)
+		initialCycle, sentryControlServer.UpdateHead, logger, nil)
 	if err != nil {
 		return err
 	}
