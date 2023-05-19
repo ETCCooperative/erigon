@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ledgerwatch/erigon-lib v0.0.0-20230517035724-358b538efe35
 	github.com/ledgerwatch/erigon-snapshot v1.1.1-0.20230404044759-5dec854ce336
-	github.com/ledgerwatch/log/v3 v3.7.0
+	github.com/ledgerwatch/log/v3 v3.8.0
 	github.com/ledgerwatch/secp256k1 v1.0.0
 	github.com/ledgerwatch/trackerslist v1.1.0 // indirect
 	github.com/torquem-ch/mdbx-go v0.27.10
@@ -63,6 +63,7 @@ require (
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pelletier/go-toml/v2 v2.0.7
+	github.com/pion/randutil v0.1.0
 	github.com/pion/stun v0.4.0
 	github.com/prometheus/client_golang v1.15.1
 	github.com/prometheus/common v0.42.0
@@ -208,7 +209,6 @@ require (
 	github.com/pion/interceptor v0.1.11 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.5 // indirect
-	github.com/pion/randutil v0.1.0 // indirect
 	github.com/pion/rtcp v1.2.9 // indirect
 	github.com/pion/rtp v1.7.13 // indirect
 	github.com/pion/sctp v1.8.2 // indirect
@@ -273,4 +273,4 @@ replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.3
 
 replace github.com/VictoriaMetrics/metrics => github.com/greyireland/metrics v0.0.5
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230518001616-2cf9ffa13835
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230519001625-b86d8b3126f7
