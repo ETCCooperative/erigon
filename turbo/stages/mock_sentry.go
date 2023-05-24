@@ -60,6 +60,8 @@ import (
 	"github.com/ledgerwatch/erigon/turbo/trie"
 )
 
+const MockInsertAsInitialCycle = false
+
 type MockSentry struct {
 	proto_sentry.UnimplementedSentryServer
 	Ctx            context.Context
@@ -232,8 +234,9 @@ func MockWithEverything(tb testing.TB, gspec *types.Genesis, key *ecdsa.PrivateK
 
 	logger := log.New()
 	ctx, ctxCancel := context.WithCancel(context.Background())
-	histV3, db, agg := temporal.NewTestDB(tb, ctx, dirs, gspec, logger)
+	histV3, txsV3, db, agg := temporal.NewTestDB(tb, ctx, dirs, gspec, logger)
 	cfg.HistoryV3 = histV3
+	cfg.TransactionsV3 = txsV3
 
 	erigonGrpcServeer := remotedbserver.NewKvServer(ctx, db, nil, nil, logger)
 	allSnapshots := snapshotsync.NewRoSnapshots(ethconfig.Defaults.Snapshot, dirs.Snap, logger)
@@ -337,7 +340,8 @@ func MockWithEverything(tb testing.TB, gspec *types.Genesis, key *ecdsa.PrivateK
 		}
 		return nil
 	}
-	forkValidator := engineapi.NewForkValidator(1, inMemoryExecution, dirs.Tmp)
+	br, _ := mock.NewBlocksIO()
+	forkValidator := engineapi.NewForkValidator(1, inMemoryExecution, dirs.Tmp, br)
 	networkID := uint64(1)
 	mock.sentriesClient, err = sentry.NewMultiClient(
 		mock.DB,
@@ -618,11 +622,12 @@ func (ms *MockSentry) insertPoWBlocks(chain *core.ChainPack) error {
 	}
 	ms.ReceiveWg.Wait() // Wait for all messages to be processed before we proceed
 
-	initialCycle := false
 	if ms.TxPool != nil {
 		ms.ReceiveWg.Add(1)
 	}
-	if _, err = StageLoopStep(ms.Ctx, ms.ChainConfig, ms.DB, ms.Sync, ms.Notifications, initialCycle, ms.UpdateHead, ms.Log, nil); err != nil {
+	initialCycle := MockInsertAsInitialCycle
+	hook := NewHook(ms.Ctx, ms.Notifications, ms.Sync, ms.ChainConfig, ms.Log, ms.UpdateHead)
+	if _, err = StageLoopStep(ms.Ctx, ms.DB, ms.Sync, initialCycle, ms.Log, nil, hook); err != nil {
 		return err
 	}
 	if ms.TxPool != nil {
@@ -645,7 +650,9 @@ func (ms *MockSentry) insertPoSBlocks(chain *core.ChainPack) error {
 	}
 
 	initialCycle := false
-	headBlockHash, err := StageLoopStep(ms.Ctx, ms.ChainConfig, ms.DB, ms.Sync, ms.Notifications, initialCycle, ms.UpdateHead, ms.Log, nil)
+
+	hook := NewHook(ms.Ctx, ms.Notifications, ms.Sync, ms.ChainConfig, ms.Log, ms.UpdateHead)
+	headBlockHash, err := StageLoopStep(ms.Ctx, ms.DB, ms.Sync, initialCycle, ms.Log, nil, hook)
 	if err != nil {
 		return err
 	}
@@ -658,7 +665,7 @@ func (ms *MockSentry) insertPoSBlocks(chain *core.ChainPack) error {
 		FinalizedBlockHash: chain.TopBlock.Hash(),
 	}
 	ms.SendForkChoiceRequest(&fc)
-	headBlockHash, err = StageLoopStep(ms.Ctx, ms.ChainConfig, ms.DB, ms.Sync, ms.Notifications, initialCycle, ms.UpdateHead, ms.Log, nil)
+	headBlockHash, err = StageLoopStep(ms.Ctx, ms.DB, ms.Sync, initialCycle, ms.Log, nil, hook)
 	if err != nil {
 		return err
 	}
