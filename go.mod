@@ -3,7 +3,7 @@ module github.com/ledgerwatch/erigon
 go 1.19
 
 require (
-	github.com/ledgerwatch/erigon-lib v0.0.0-20230518195502-f2d93b959bb3
+	github.com/ledgerwatch/erigon-lib v0.0.0-20230526090022-8d8dbd06687f
 	github.com/ledgerwatch/erigon-snapshot v1.1.1-0.20230404044759-5dec854ce336
 	github.com/ledgerwatch/log/v3 v3.8.0
 	github.com/ledgerwatch/secp256k1 v1.0.0
@@ -13,7 +13,7 @@ require (
 
 require (
 	gfx.cafe/util/go/generic v0.0.0-20230502013805-237fcc25d586
-	github.com/99designs/gqlgen v0.17.30
+	github.com/99designs/gqlgen v0.17.31
 	github.com/Giulio2002/bls v0.0.0-20230507111335-fa36c339a11f
 	github.com/RoaringBitmap/roaring v1.2.3
 	github.com/VictoriaMetrics/fastcache v1.12.1
