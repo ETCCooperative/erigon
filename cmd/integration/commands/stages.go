@@ -751,7 +751,7 @@ func stageHeaders(db kv.RwDB, ctx context.Context, logger log.Logger) error {
 		if err = bw.TruncateTd(tx, progress+1); err != nil {
 			return err
 		}
-		hash, err := rawdb.ReadCanonicalHash(tx, progress-1)
+		hash, err := br.CanonicalHash(ctx, tx, progress-1)
 		if err != nil {
 			return err
 		}
@@ -1413,8 +1413,9 @@ func blocksIO(db kv.RoDB, logger log.Logger) (services.FullBlockReader, *blockio
 	openBlockReaderOnce.Do(func() {
 		sn, _ := allSnapshots(context.Background(), db, logger)
 		transactionsV3 := kvcfg.TransactionsV3.FromDB(db)
+		histV3 := kvcfg.HistoryV3.FromDB(db)
 		_blockReaderSingleton = snapshotsync.NewBlockReader(sn, transactionsV3)
-		_blockWriterSingleton = blockio.NewBlockWriter(transactionsV3)
+		_blockWriterSingleton = blockio.NewBlockWriter(histV3, transactionsV3)
 	})
 	return _blockReaderSingleton, _blockWriterSingleton
 }

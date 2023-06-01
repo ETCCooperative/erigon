@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ledgerwatch/erigon/consensus/ethash"
-	"github.com/ledgerwatch/erigon/core/rawdb"
 	"github.com/ledgerwatch/erigon/core/state"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/core/vm"
@@ -54,15 +53,16 @@ var stateRootCmd = &cobra.Command{
 }
 
 func blocksIO(db kv.RoDB) (services.FullBlockReader, *blockio.BlockWriter) {
-	var transactionsV3 bool
+	var histV3, transactionsV3 bool
 	if err := db.View(context.Background(), func(tx kv.Tx) error {
 		transactionsV3, _ = kvcfg.TransactionsV3.Enabled(tx)
+		histV3, _ = kvcfg.HistoryV3.Enabled(tx)
 		return nil
 	}); err != nil {
 		panic(err)
 	}
 	br := snapshotsync.NewBlockReader(snapshotsync.NewRoSnapshots(ethconfig.Snapshot{Enabled: false}, "", log.New()), transactionsV3)
-	bw := blockio.NewBlockWriter(transactionsV3)
+	bw := blockio.NewBlockWriter(histV3, transactionsV3)
 	return br, bw
 }
 
@@ -137,12 +137,8 @@ func StateRoot(genesis *types.Genesis, logger log.Logger, blockNum uint64, datad
 		if block >= blockNum {
 			break
 		}
-		blockHash, err := rawdb.ReadCanonicalHash(historyTx, block)
-		if err != nil {
-			return err
-		}
 		var b *types.Block
-		b, _, err = blockReader.BlockWithSenders(ctx, historyTx, blockHash, block)
+		b, err = blockReader.BlockByNumber(ctx, historyTx, block)
 		if err != nil {
 			return err
 		}
