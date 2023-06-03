@@ -77,7 +77,7 @@ type SimulatedBackend struct {
 	pendingHeader   *types.Header
 	gasPool         *core.GasPool
 	pendingBlock    *types.Block // Currently pending block that will be imported on request
-	pendingReader   *state.PlainStateReader
+	pendingReader   state.StateReader
 	pendingReaderTx kv.Tx
 	pendingState    *state.IntraBlockState // Currently pending state that will be the active on request
 
@@ -184,6 +184,7 @@ func (b *SimulatedBackend) emptyPendingBlock() {
 		panic(err)
 	}
 	b.pendingReaderTx = tx
+
 	if ethconfig.EnableHistoryV4InTest {
 		panic("implement me")
 		//b.pendingReader = state.NewReaderV4(b.pendingReaderTx.(kv.TemporalTx))
@@ -562,7 +563,7 @@ func (b *SimulatedBackend) CallContract(ctx context.Context, call ethereum.CallM
 	}
 	var res *core.ExecutionResult
 	if err := b.m.DB.View(context.Background(), func(tx kv.Tx) (err error) {
-		s := state.New(state.NewPlainStateReader(tx))
+		s := state.New(b.m.NewStateReader(tx))
 		res, err = b.callContract(ctx, call, b.pendingBlock, s)
 		if err != nil {
 			return err
@@ -732,8 +733,7 @@ func (b *SimulatedBackend) callContract(_ context.Context, call ethereum.CallMsg
 
 	txContext := core.NewEVMTxContext(msg)
 	header := block.Header()
-	excessDataGas := header.ParentExcessDataGas(b.getHeader)
-	evmContext := core.NewEVMBlockContext(header, core.GetHashFn(header, b.getHeader), b.m.Engine, nil, excessDataGas)
+	evmContext := core.NewEVMBlockContext(header, core.GetHashFn(header, b.getHeader), b.m.Engine, nil)
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	vmEnv := vm.NewEVM(evmContext, txContext, statedb, b.m.ChainConfig, vm.Config{})
@@ -766,8 +766,7 @@ func (b *SimulatedBackend) SendTransaction(ctx context.Context, tx types.Transac
 		&b.pendingHeader.Coinbase, b.gasPool,
 		b.pendingState, state.NewNoopWriter(),
 		b.pendingHeader, tx,
-		&b.pendingHeader.GasUsed, vm.Config{},
-		b.pendingHeader.ParentExcessDataGas(b.getHeader)); err != nil {
+		&b.pendingHeader.GasUsed, vm.Config{}); err != nil {
 		return err
 	}
 	//fmt.Printf("==== Start producing block %d\n", (b.prependBlock.NumberU64() + 1))

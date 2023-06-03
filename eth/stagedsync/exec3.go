@@ -165,10 +165,10 @@ func ExecV3(ctx context.Context,
 			return err
 		}
 		defer applyTx.Rollback()
-	} else {
-		if blockSnapshots.Cfg().Enabled {
-			defer blockSnapshots.EnableMadvNormal().DisableReadAhead()
-		}
+		//} else {
+		//	if blockSnapshots.Cfg().Enabled {
+		//defer blockSnapshots.EnableMadvNormal().DisableReadAhead()
+		//}
 	}
 
 	var block, stageProgress uint64
@@ -529,7 +529,7 @@ Loop:
 			defer getHashFnMute.Unlock()
 			return f(n)
 		}
-		blockContext := core.NewEVMBlockContext(header, getHashFn, engine, nil /* author */, nil /*excessDataGas*/)
+		blockContext := core.NewEVMBlockContext(header, getHashFn, engine, nil /* author */)
 
 		if parallel {
 			select {
@@ -1046,7 +1046,7 @@ func reconstituteStep(last bool,
 				defer getHashFnMute.Unlock()
 				return f(n)
 			}
-			blockContext := core.NewEVMBlockContext(header, getHashFn, engine, nil /* author */, nil /*excessDataGas*/)
+			blockContext := core.NewEVMBlockContext(header, getHashFn, engine, nil /* author */)
 			rules := chainConfig.Rules(bn, b.Time())
 
 			for txIndex := -1; txIndex <= len(txs); txIndex++ {
