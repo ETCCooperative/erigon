@@ -47,7 +47,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
-	github.com/hashicorp/golang-lru/v2 v2.0.2
+	github.com/hashicorp/golang-lru/v2 v2.0.3
 	github.com/holiman/uint256 v1.2.2
 	github.com/huandu/xstrings v1.4.0
 	github.com/huin/goupnp v1.1.0
@@ -274,4 +274,4 @@ replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.3
 
 replace github.com/VictoriaMetrics/metrics => github.com/greyireland/metrics v0.0.5
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230608001833-5e7201e1dd87
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230610001703-5314b33bb8db
