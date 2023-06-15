@@ -87,9 +87,9 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.2-0.20230422221642-25e09f9d292d
 	github.com/xsleonard/go-merkle v1.1.0
 	go.uber.org/zap v1.24.0
-	golang.org/x/crypto v0.9.0
+	golang.org/x/crypto v0.10.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/net v0.10.0
+	golang.org/x/net v0.11.0
 	golang.org/x/sync v0.2.0
 	golang.org/x/sys v0.9.0
 	golang.org/x/time v0.3.0
@@ -253,7 +253,7 @@ require (
 	go.uber.org/fx v1.19.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
@@ -275,4 +275,4 @@ replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.3
 
 replace github.com/VictoriaMetrics/metrics => github.com/greyireland/metrics v0.0.5
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230614001715-bf89141f120b
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230615001825-11a87f52b1a9
