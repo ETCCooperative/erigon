@@ -274,4 +274,4 @@ replace github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.3
 
 replace github.com/VictoriaMetrics/metrics => github.com/greyireland/metrics v0.0.5
 
-replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230615001825-11a87f52b1a9
+replace github.com/ledgerwatch/erigon-lib => github.com/etccooperative/erigon-lib v0.0.0-20230616001802-b1850c78639c
