@@ -1541,7 +1541,7 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 		SetDNSDiscoveryDefaults(cfg, *genesisHash)
 	case networkname.ClassicChainName:
 		log.Warn("SetEthConfig", "chain", chain)
-		cfg.Genesis = core.DefaultGenesisBlockByChainName(networkname.ClassicChainName)
+		cfg.Genesis = core.GenesisBlockByChainName(networkname.ClassicChainName)
 
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkID = params.NetworkIDByChainName(chain)
