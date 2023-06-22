@@ -321,11 +321,13 @@ func GenerateChain(config *chain.Config, parent *types.Block, engine consensus.E
 		if daoBlock := config.DAOForkBlock; daoBlock != nil {
 			limit := new(big.Int).Add(daoBlock, params.DAOForkExtraRange)
 			if b.header.Number.Cmp(daoBlock) >= 0 && b.header.Number.Cmp(limit) < 0 {
-				b.header.Extra = common.CopyBytes(params.DAOForkBlockExtra)
+				if config.DAOForkSupport {
+					b.header.Extra = common.CopyBytes(params.DAOForkBlockExtra)
+				}
 			}
-			if daoBlock.Cmp(b.header.Number) == 0 {
-				misc.ApplyDAOHardFork(ibs)
-			}
+		}
+		if config.DAOForkSupport && config.DAOForkBlock != nil && config.DAOForkBlock.Cmp(b.header.Number) == 0 {
+			misc.ApplyDAOHardFork(ibs)
 		}
 		systemcontracts.UpgradeBuildInSystemContract(config, b.header.Number, ibs, logger)
 		// Execute any user modifications to the block

@@ -101,7 +101,7 @@ func ExecuteBlockEphemerally(
 		}
 	}
 
-	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(block.Number()) == 0 {
+	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(block.Number()) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
 	noop := state.NewNoopWriter()
@@ -206,7 +206,7 @@ func ExecuteBlockEphemerallyBor(
 		}
 	}
 
-	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(block.Number()) == 0 {
+	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(block.Number()) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
 	noop := state.NewNoopWriter()
@@ -309,7 +309,7 @@ func rlpHash(x interface{}) (h libcommon.Hash) {
 }
 
 func SysCallContract(contract libcommon.Address, data []byte, chainConfig *chain.Config, ibs *state.IntraBlockState, header *types.Header, engine consensus.EngineReader, constCall bool) (result []byte, err error) {
-	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
+	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
 	msg := types.NewMessage(
@@ -353,7 +353,7 @@ func SysCallContract(contract libcommon.Address, data []byte, chainConfig *chain
 
 // SysCreate is a special (system) contract creation methods for genesis constructors.
 func SysCreate(contract libcommon.Address, data []byte, chainConfig chain.Config, ibs *state.IntraBlockState, header *types.Header) (result []byte, err error) {
-	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
+	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
 	msg := types.NewMessage(
@@ -387,7 +387,7 @@ func CallContract(contract libcommon.Address, data []byte, chainConfig chain.Con
 	gp := new(GasPool)
 	gp.AddGas(50_000_000)
 	var gasUsed uint64
-	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
+	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
 	noop := state.NewNoopWriter()
