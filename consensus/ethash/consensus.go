@@ -521,7 +521,7 @@ func (ethash *Ethash) verifySeal(header *types.Header, fulldag bool) error { //n
 	if !fulldag {
 		cache := ethash.cache(number)
 
-		size := datasetSize(number)
+		size := datasetSize(cache.epoch)
 		if ethash.config.PowMode == ethashcfg.ModeTest {
 			size = 32 * 1024
 		}
