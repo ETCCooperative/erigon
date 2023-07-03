@@ -615,6 +615,9 @@ func initConsensusEngine(cc *chain2.Config, snapshots *freezeblocks.RoSnapshots,
 		consensusConfig = &config.Bor
 	} else {
 		consensusConfig = &config.Ethash
+		if cc.IsClassic() {
+			config.Ethash.ECIP1099Block = cc.ECIP1099ForkBlockUint64()
+		}
 	}
 	return ethconsensusconfig.CreateConsensusEngine(cc, consensusConfig, config.Miner.Notify, config.Miner.Noverify, config.HeimdallgRPCAddress,
 		config.HeimdallURL, config.WithoutHeimdall, datadirCli, true /* readonly */, logger)

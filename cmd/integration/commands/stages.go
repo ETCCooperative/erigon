@@ -1615,10 +1615,10 @@ func initConsensusEngine(cc *chain2.Config, datadir string, db kv.RwDB, logger l
 	} else if cc.Bor != nil {
 		consensusConfig = &config.Bor
 	} else {
+		consensusConfig = &config.Ethash
 		if cc.IsClassic() {
 			config.Ethash.ECIP1099Block = cc.ECIP1099ForkBlockUint64()
 		}
-		consensusConfig = &config.Ethash
 	}
 	return ethconsensusconfig.CreateConsensusEngine(cc, consensusConfig, config.Miner.Notify, config.Miner.Noverify,
 		HeimdallgRPCAddress, HeimdallURL, config.WithoutHeimdall, datadir, db.ReadOnly(), logger)

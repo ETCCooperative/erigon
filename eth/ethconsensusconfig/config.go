@@ -42,6 +42,10 @@ func CreateConsensusEngine(chainConfig *chain.Config, config interface{}, notify
 			logger.Warn("Ethash used in shared mode")
 			eng = ethash.NewShared()
 		default:
+			var ecip1099 *uint64
+			if chainConfig.IsClassic() {
+				ecip1099 = chainConfig.ECIP1099ForkBlockUint64()
+			}
 			eng = ethash.New(ethashcfg.Config{
 				CachesInMem:      consensusCfg.CachesInMem,
 				CachesLockMmap:   consensusCfg.CachesLockMmap,
@@ -49,6 +53,7 @@ func CreateConsensusEngine(chainConfig *chain.Config, config interface{}, notify
 				DatasetsInMem:    consensusCfg.DatasetsInMem,
 				DatasetsOnDisk:   consensusCfg.DatasetsOnDisk,
 				DatasetsLockMmap: consensusCfg.DatasetsLockMmap,
+				ECIP1099Block:    ecip1099,
 			}, notify, noVerify)
 		}
 	case *params.ConsensusSnapshotConfig:

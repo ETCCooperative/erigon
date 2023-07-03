@@ -458,7 +458,9 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 		consensusConfig = &config.Bor
 	} else {
 		consensusConfig = &config.Ethash
-		config.Ethash.ECIP1099Block = chainConfig.ECIP1099ForkBlockUint64()
+		if chainConfig.IsClassic() {
+			config.Ethash.ECIP1099Block = chainConfig.ECIP1099ForkBlockUint64()
+		}
 	}
 	backend.engine = ethconsensusconfig.CreateConsensusEngine(chainConfig, consensusConfig, config.Miner.Notify, config.Miner.Noverify, config.HeimdallgRPCAddress, config.HeimdallURL,
 		config.WithoutHeimdall, stack.DataDir(), false /* readonly */, logger)
