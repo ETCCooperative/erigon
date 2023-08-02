@@ -15,11 +15,11 @@ import (
 	"github.com/ledgerwatch/erigon-lib/common/datadir"
 	"github.com/ledgerwatch/erigon-lib/common/dbg"
 	proto_downloader "github.com/ledgerwatch/erigon-lib/gointerfaces/downloader"
-	"github.com/ledgerwatch/erigon-lib/gointerfaces/engine"
 	"github.com/ledgerwatch/erigon-lib/kv"
 	"github.com/ledgerwatch/erigon-lib/kv/memdb"
 	"github.com/ledgerwatch/erigon-lib/state"
 	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_helpers"
+	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_types"
 	"github.com/ledgerwatch/erigon/turbo/services"
 
 	"github.com/ledgerwatch/erigon/cmd/sentry/sentry"
@@ -40,24 +40,24 @@ import (
 func SendPayloadStatus(hd *headerdownload.HeaderDownload, headBlockHash libcommon.Hash, err error) {
 	if pendingPayloadStatus := hd.GetPendingPayloadStatus(); pendingPayloadStatus != nil {
 		if err != nil {
-			hd.PayloadStatusCh <- engine_helpers.PayloadStatus{CriticalError: err}
+			hd.PayloadStatusCh <- engine_types.PayloadStatus{CriticalError: err}
 		} else {
 			hd.PayloadStatusCh <- *pendingPayloadStatus
 		}
 	} else if pendingPayloadHash := hd.GetPendingPayloadHash(); pendingPayloadHash != (libcommon.Hash{}) {
 		if err != nil {
-			hd.PayloadStatusCh <- engine_helpers.PayloadStatus{CriticalError: err}
+			hd.PayloadStatusCh <- engine_types.PayloadStatus{CriticalError: err}
 		} else {
-			var status engine.EngineStatus
+			var status engine_types.EngineStatus
 			if headBlockHash == pendingPayloadHash {
-				status = engine.EngineStatus_VALID
+				status = engine_types.ValidStatus
 			} else {
 				log.Warn("Failed to execute pending payload", "pendingPayload", pendingPayloadHash, "headBlock", headBlockHash)
-				status = engine.EngineStatus_INVALID
+				status = engine_types.InvalidStatus
 			}
-			hd.PayloadStatusCh <- engine_helpers.PayloadStatus{
+			hd.PayloadStatusCh <- engine_types.PayloadStatus{
 				Status:          status,
-				LatestValidHash: headBlockHash,
+				LatestValidHash: &headBlockHash,
 			}
 		}
 	}
@@ -320,8 +320,8 @@ func (h *Hook) AfterRun(tx kv.Tx, finishProgressBefore uint64) error {
 			return nil
 		}
 	}
-
 	if notifications != nil && notifications.Accumulator != nil && currentHeder != nil {
+
 		pendingBaseFee := misc.CalcBaseFee(h.chainConfig, currentHeder)
 		if currentHeder.Number.Uint64() == 0 {
 			notifications.Accumulator.StartChange(0, currentHeder.Hash(), nil, false)
@@ -442,9 +442,60 @@ func NewDefaultStages(ctx context.Context,
 	return stagedsync.DefaultStages(ctx,
 		stagedsync.StageSnapshotsCfg(db, *controlServer.ChainConfig, dirs, blockRetire, snapDownloader, blockReader, notifications.Events, cfg.HistoryV3, agg),
 		stagedsync.StageHeadersCfg(db, controlServer.Hd, controlServer.Bd, *controlServer.ChainConfig, controlServer.SendHeaderRequest, controlServer.PropagateNewBlockHashes, controlServer.Penalize, cfg.BatchSize, p2pCfg.NoDiscovery, blockReader, blockWriter, dirs.Tmp, notifications, forkValidator),
-		stagedsync.StageCumulativeIndexCfg(db, blockReader),
 		stagedsync.StageBlockHashesCfg(db, dirs.Tmp, controlServer.ChainConfig, blockWriter),
 		stagedsync.StageBodiesCfg(db, controlServer.Bd, controlServer.SendBodyRequest, controlServer.Penalize, controlServer.BroadcastNewBlock, cfg.Sync.BodyDownloadTimeoutSeconds, *controlServer.ChainConfig, blockReader, cfg.HistoryV3, blockWriter),
+		stagedsync.StageSendersCfg(db, controlServer.ChainConfig, false, dirs.Tmp, cfg.Prune, blockReader, controlServer.Hd),
+		stagedsync.StageExecuteBlocksCfg(
+			db,
+			cfg.Prune,
+			cfg.BatchSize,
+			nil,
+			controlServer.ChainConfig,
+			controlServer.Engine,
+			&vm.Config{},
+			notifications.Accumulator,
+			cfg.StateStream,
+			/*stateStream=*/ false,
+			cfg.HistoryV3,
+			dirs,
+			blockReader,
+			controlServer.Hd,
+			cfg.Genesis,
+			cfg.Sync,
+			agg,
+		),
+		stagedsync.StageHashStateCfg(db, dirs, cfg.HistoryV3),
+		stagedsync.StageTrieCfg(db, true, true, false, dirs.Tmp, blockReader, controlServer.Hd, cfg.HistoryV3, agg),
+		stagedsync.StageHistoryCfg(db, cfg.Prune, dirs.Tmp),
+		stagedsync.StageLogIndexCfg(db, cfg.Prune, dirs.Tmp),
+		stagedsync.StageCallTracesCfg(db, cfg.Prune, 0, dirs.Tmp),
+		stagedsync.StageTxLookupCfg(db, cfg.Prune, dirs.Tmp, controlServer.ChainConfig.Bor, blockReader),
+		stagedsync.StageFinishCfg(db, dirs.Tmp, forkValidator),
+		runInTestMode)
+}
+
+func NewPipelineStages(ctx context.Context,
+	db kv.RwDB,
+	cfg *ethconfig.Config,
+	controlServer *sentry.MultiClient,
+	notifications *shards.Notifications,
+	snapDownloader proto_downloader.DownloaderClient,
+	blockReader services.FullBlockReader,
+	blockRetire services.BlockRetire,
+	agg *state.AggregatorV3,
+	forkValidator *engine_helpers.ForkValidator,
+	logger log.Logger,
+) []*stagedsync.Stage {
+	dirs := cfg.Dirs
+	blockWriter := blockio.NewBlockWriter(cfg.HistoryV3)
+
+	// During Import we don't want other services like header requests, body requests etc. to be running.
+	// Hence we run it in the test mode.
+	runInTestMode := cfg.ImportMode
+
+	return stagedsync.PipelineStages(ctx,
+		stagedsync.StageSnapshotsCfg(db, *controlServer.ChainConfig, dirs, blockRetire, snapDownloader, blockReader, notifications.Events, cfg.HistoryV3, agg),
+		stagedsync.StageBlockHashesCfg(db, dirs.Tmp, controlServer.ChainConfig, blockWriter),
 		stagedsync.StageSendersCfg(db, controlServer.ChainConfig, false, dirs.Tmp, cfg.Prune, blockReader, controlServer.Hd),
 		stagedsync.StageExecuteBlocksCfg(
 			db,

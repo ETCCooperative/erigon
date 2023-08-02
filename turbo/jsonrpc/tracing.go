@@ -104,7 +104,7 @@ func (api *PrivateDebugAPIImpl) traceBlock(ctx context.Context, blockNrOrHash rp
 	rules := chainConfig.Rules(block.NumberU64(), block.Time())
 	stream.WriteArrayStart()
 
-	borTx, _, _, _ := rawdb.ReadBorTransactionForBlock(tx, block)
+	borTx := rawdb.ReadBorTransactionForBlock(tx, block.NumberU64())
 	txns := block.Transactions()
 	if borTx != nil && *config.BorTraceEnabled {
 		txns = append(txns, borTx)
@@ -231,7 +231,7 @@ func (api *PrivateDebugAPIImpl) TraceTransaction(ctx context.Context, hash commo
 	}
 	if txn == nil {
 		var borTx types.Transaction
-		borTx, _, _, _, err = rawdb.ReadBorTransaction(tx, hash)
+		borTx, err = rawdb.ReadBorTransaction(tx, hash)
 		if err != nil {
 			return err
 		}
@@ -440,7 +440,7 @@ func (api *PrivateDebugAPIImpl) TraceCallMany(ctx context.Context, bundles []Bun
 
 	// Setup the gas pool (also for unmetered requests)
 	// and apply the message.
-	gp := new(core.GasPool).AddGas(math.MaxUint64).AddDataGas(math.MaxUint64)
+	gp := new(core.GasPool).AddGas(math.MaxUint64).AddBlobGas(math.MaxUint64)
 	for idx, txn := range replayTransactions {
 		st.SetTxContext(txn.Hash(), block.Hash(), idx)
 		msg, err := txn.AsMessage(*signer, block.BaseFee(), rules)

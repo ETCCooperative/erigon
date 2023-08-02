@@ -13,15 +13,19 @@ import (
 	"github.com/ledgerwatch/erigon-lib/gointerfaces"
 	"github.com/ledgerwatch/erigon-lib/gointerfaces/execution"
 	types2 "github.com/ledgerwatch/erigon-lib/gointerfaces/types"
+	"github.com/ledgerwatch/log/v3"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 
 	"github.com/ledgerwatch/erigon/cl/cltypes"
+	"github.com/ledgerwatch/erigon/cl/phase1/execution_client/rpc_helper"
 	"github.com/ledgerwatch/erigon/core/types"
-	"github.com/ledgerwatch/erigon/turbo/engineapi"
+	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_types"
 )
+
+const fcuTimeout = 12 * time.Second
 
 // ExecutionClient interfaces with the Erigon-EL component consensus side.
 type ExecutionClient struct {
@@ -151,7 +155,7 @@ func (ec *ExecutionClient) InsertBodies(bodies []*types.RawBody, blockHashes []l
 			BlockHash:    gointerfaces.ConvertHashToH256(blockHashes[i]),
 			BlockNumber:  blockNumbers[i],
 			Transactions: body.Transactions,
-			Withdrawals:  engineapi.ConvertWithdrawalsToRpc(body.Withdrawals),
+			Withdrawals:  engine_types.ConvertWithdrawalsToRpc(body.Withdrawals),
 		})
 	}
 	_, err := ec.client.InsertBodies(ec.ctx, &execution.InsertBodiesRequest{Bodies: grpcBodies})
@@ -183,7 +187,12 @@ func (ec *ExecutionClient) InsertExecutionPayloads(payloads []*cltypes.Eth1Block
 }
 
 func (ec *ExecutionClient) ForkChoiceUpdate(headHash libcommon.Hash) (*execution.ForkChoiceReceipt, error) {
-	return ec.client.UpdateForkChoice(ec.ctx, gointerfaces.ConvertHashToH256(headHash))
+	log.Debug("[ExecutionClientRpc] Calling EL", "method", rpc_helper.ForkChoiceUpdatedV1)
+
+	return ec.client.UpdateForkChoice(ec.ctx, &execution.ForkChoice{
+		HeadBlockHash: gointerfaces.ConvertHashToH256(headHash),
+		Timeout:       uint64(fcuTimeout.Milliseconds()),
+	})
 }
 
 func (ec *ExecutionClient) IsCanonical(hash libcommon.Hash) (bool, error) {
@@ -237,6 +246,6 @@ func (ec *ExecutionClient) ReadBody(number uint64, blockHash libcommon.Hash) (*t
 	return &types.RawBody{
 		Transactions: resp.Body.Transactions,
 		Uncles:       uncles,
-		Withdrawals:  engineapi.ConvertWithdrawalsFromRpc(resp.Body.Withdrawals),
+		Withdrawals:  engine_types.ConvertWithdrawalsFromRpc(resp.Body.Withdrawals),
 	}, nil
 }

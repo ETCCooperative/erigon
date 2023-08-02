@@ -58,7 +58,7 @@ type EthAPI interface {
 	// Receipt related (see ./eth_receipts.go)
 	GetTransactionReceipt(ctx context.Context, hash common.Hash) (map[string]interface{}, error)
 	GetLogs(ctx context.Context, crit ethFilters.FilterCriteria) (types.Logs, error)
-	GetBlockReceipts(ctx context.Context, number rpc.BlockNumber) ([]map[string]interface{}, error)
+	GetBlockReceipts(ctx context.Context, numberOrHash rpc.BlockNumberOrHash) ([]map[string]interface{}, error)
 
 	// Uncle related (see ./eth_uncles.go)
 	GetUncleByBlockNumberAndIndex(ctx context.Context, blockNr rpc.BlockNumber, index hexutil.Uint) (map[string]interface{}, error)
@@ -364,7 +364,7 @@ type RPCTransaction struct {
 	Type                hexutil.Uint64     `json:"type"`
 	Accesses            *types2.AccessList `json:"accessList,omitempty"`
 	ChainID             *hexutil.Big       `json:"chainId,omitempty"`
-	MaxFeePerDataGas    *hexutil.Big       `json:"maxFeePerDataGas,omitempty"`
+	MaxFeePerBlobGas    *hexutil.Big       `json:"maxFeePerBlobGas,omitempty"`
 	BlobVersionedHashes []common.Hash      `json:"blobVersionedHashes,omitempty"`
 	V                   *hexutil.Big       `json:"v"`
 	R                   *hexutil.Big       `json:"r"`
@@ -427,7 +427,7 @@ func newRPCTransaction(tx types.Transaction, blockHash common.Hash, blockNumber 
 		result.S = (*hexutil.Big)(t.S.ToBig())
 		result.Accesses = &t.AccessList
 		result.GasPrice = computeGasPrice(tx, blockHash, baseFee)
-		result.MaxFeePerDataGas = (*hexutil.Big)(t.MaxFeePerDataGas.ToBig())
+		result.MaxFeePerBlobGas = (*hexutil.Big)(t.MaxFeePerBlobGas.ToBig())
 		result.BlobVersionedHashes = t.BlobVersionedHashes
 	}
 	signer := types.LatestSignerForChainID(chainId.ToBig())

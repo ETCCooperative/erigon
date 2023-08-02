@@ -251,7 +251,6 @@ type MultiClient struct {
 	Hd                                *headerdownload.HeaderDownload
 	Bd                                *bodydownload.BodyDownload
 	IsMock                            bool
-	forkValidator                     *engine_helpers.ForkValidator
 	nodeName                          string
 	sentries                          []direct.SentryClient
 	headHeight                        uint64
@@ -284,6 +283,7 @@ func NewMultiClient(
 	sentries []direct.SentryClient,
 	syncCfg ethconfig.Sync,
 	blockReader services.FullBlockReader,
+	blockBufferSize int,
 	logPeerInfo bool,
 	forkValidator *engine_helpers.ForkValidator,
 	dropUselessPeers bool,
@@ -305,7 +305,7 @@ func NewMultiClient(
 	if err := hd.RecoverFromDb(db); err != nil {
 		return nil, fmt.Errorf("recovery from DB failed: %w", err)
 	}
-	bd := bodydownload.NewBodyDownload(engine, int(syncCfg.BodyCacheLimit), blockReader)
+	bd := bodydownload.NewBodyDownload(engine, blockBufferSize, int(syncCfg.BodyCacheLimit), blockReader)
 
 	cs := &MultiClient{
 		nodeName:                          nodeName,
@@ -316,7 +316,6 @@ func NewMultiClient(
 		Engine:                            engine,
 		blockReader:                       blockReader,
 		logPeerInfo:                       logPeerInfo,
-		forkValidator:                     forkValidator,
 		historyV3:                         historyV3,
 		sendHeaderRequestsToMultiplePeers: chainConfig.TerminalTotalDifficultyPassed,
 		dropUselessPeers:                  dropUselessPeers,
@@ -519,9 +518,6 @@ func (cs *MultiClient) newBlock66(ctx context.Context, inreq *proto_sentry.Inbou
 				propagate = *firstPosSeen >= segments[0].Number
 			}
 			if !cs.IsMock && propagate {
-				if cs.forkValidator != nil {
-					cs.forkValidator.TryAddingPoWBlock(request.Block)
-				}
 				cs.PropagateNewBlockHashes(ctx, []headerdownload.Announce{
 					{
 						Number: segments[0].Number,

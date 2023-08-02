@@ -9,25 +9,16 @@ import (
 	"time"
 
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
-	"github.com/ledgerwatch/erigon-lib/gointerfaces/engine"
 	"github.com/ledgerwatch/erigon/cl/clparams"
 	"github.com/ledgerwatch/erigon/cl/cltypes"
 	"github.com/ledgerwatch/erigon/cl/phase1/execution_client/rpc_helper"
 	"github.com/ledgerwatch/erigon/common/hexutil"
 	"github.com/ledgerwatch/erigon/rpc"
-	"github.com/ledgerwatch/erigon/turbo/jsonrpc"
+	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_types"
 	"github.com/ledgerwatch/log/v3"
 )
 
 const DefaultRPCHTTPTimeout = time.Second * 30
-
-const (
-	ValidStatus            = "VALID"
-	InvalidStatus          = "INVALID"
-	SyncingStatus          = "SYNCING"
-	AcceptedStatus         = "ACCEPTED"
-	InvalidBlockHashStatus = "INVALID_BLOCK_HASH"
-)
 
 type ExecutionClientRpc struct {
 	client    *rpc.Client
@@ -61,7 +52,7 @@ func NewExecutionClientRPC(ctx context.Context, jwtSecret []byte, addr string, p
 	}, nil
 }
 
-func (cc *ExecutionClientRpc) NewPayload(payload *cltypes.Eth1Block) (invalid bool, err error) {
+func (cc *ExecutionClientRpc) NewPayload(payload *cltypes.Eth1Block, beaconParentRoot *libcommon.Hash) (invalid bool, err error) {
 	if payload == nil {
 		return
 	}
@@ -85,7 +76,7 @@ func (cc *ExecutionClientRpc) NewPayload(payload *cltypes.Eth1Block) (invalid bo
 		return
 	}
 
-	request := jsonrpc.ExecutionPayload{
+	request := engine_types.ExecutionPayload{
 		ParentHash:   payload.ParentHash,
 		FeeRecipient: payload.FeeRecipient,
 		StateRoot:    payload.StateRoot,
@@ -111,42 +102,35 @@ func (cc *ExecutionClientRpc) NewPayload(payload *cltypes.Eth1Block) (invalid bo
 	}
 	// Process Deneb
 	if payload.Version() >= clparams.DenebVersion {
-		request.DataGasUsed = new(hexutil.Uint64)
-		request.ExcessDataGas = new(hexutil.Uint64)
-		*request.DataGasUsed = hexutil.Uint64(payload.DataGasUsed)
-		*request.ExcessDataGas = hexutil.Uint64(payload.ExcessDataGas)
+		request.BlobGasUsed = new(hexutil.Uint64)
+		request.ExcessBlobGas = new(hexutil.Uint64)
+		*request.BlobGasUsed = hexutil.Uint64(payload.BlobGasUsed)
+		*request.ExcessBlobGas = hexutil.Uint64(payload.ExcessBlobGas)
 	}
 
-	payloadStatus := make(map[string]interface{}) // As it is done in the rpcdaemon
+	payloadStatus := &engine_types.PayloadStatus{} // As it is done in the rpcdaemon
 	log.Debug("[ExecutionClientRpc] Calling EL", "method", engineMethod)
 	err = cc.client.CallContext(cc.ctx, &payloadStatus, engineMethod, request)
-	if err != nil {
-		return
-	}
-
 	if err != nil {
 		err = fmt.Errorf("execution Client RPC failed to retrieve the NewPayload status response, err: %w", err)
 		return
 	}
-	var status string
-	var ok bool
-	if status, ok = payloadStatus["status"].(string); !ok {
-		err = fmt.Errorf("invalid response received from NewPayload")
-		return
 
+	invalid = payloadStatus.Status == engine_types.InvalidStatus || payloadStatus.Status == engine_types.InvalidBlockHashStatus
+	err = checkPayloadStatus(payloadStatus)
+	if payloadStatus.Status == engine_types.AcceptedStatus {
+		log.Info("[ExecutionClientRpc] New block accepted")
 	}
-	invalid = status == InvalidStatus || status == InvalidBlockHashStatus
-
 	return
 }
 
 func (cc *ExecutionClientRpc) ForkChoiceUpdate(finalized libcommon.Hash, head libcommon.Hash) error {
-	forkChoiceRequest := jsonrpc.ForkChoiceState{
+	forkChoiceRequest := engine_types.ForkChoiceState{
 		HeadHash:           head,
 		SafeBlockHash:      head,
 		FinalizedBlockHash: finalized,
 	}
-	forkChoiceResp := &engine.EngineForkChoiceUpdatedResponse{}
+	forkChoiceResp := &engine_types.ForkChoiceUpdatedResponse{}
 	log.Debug("[ExecutionClientRpc] Calling EL", "method", rpc_helper.ForkChoiceUpdatedV1)
 
 	err := cc.client.CallContext(cc.ctx, forkChoiceResp, rpc_helper.ForkChoiceUpdatedV1, forkChoiceRequest)
@@ -157,6 +141,25 @@ func (cc *ExecutionClientRpc) ForkChoiceUpdate(finalized libcommon.Hash, head li
 	if err != nil && err.Error() == errContextExceeded {
 		return nil
 	}
+	if err != nil {
+		return err
+	}
 
-	return err
+	return checkPayloadStatus(forkChoiceResp.PayloadStatus)
+}
+
+func checkPayloadStatus(payloadStatus *engine_types.PayloadStatus) error {
+	if payloadStatus == nil {
+		return fmt.Errorf("empty payloadStatus")
+	}
+
+	validationError := payloadStatus.ValidationError
+	if validationError != nil {
+		return validationError.Error()
+	}
+
+	if payloadStatus.Status == engine_types.InvalidStatus {
+		return fmt.Errorf("status: %s", payloadStatus.Status)
+	}
+	return nil
 }

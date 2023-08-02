@@ -108,7 +108,7 @@ func TestExecute(t *testing.T) {
 func TestCall(t *testing.T) {
 	_, tx := memdb.NewTestTx(t)
 	state := state.New(state.NewDbStateReader(tx))
-	address := libcommon.HexToAddress("0x0a")
+	address := libcommon.HexToAddress("0xaa")
 	state.SetCode(address, []byte{
 		byte(vm.PUSH1), 10,
 		byte(vm.PUSH1), 0,
@@ -196,6 +196,8 @@ func benchmarkEVM_Create(b *testing.B, code string) {
 			HomesteadBlock:        new(big.Int),
 			ByzantiumBlock:        new(big.Int),
 			ConstantinopleBlock:   new(big.Int),
+			DAOForkBlock:          new(big.Int),
+			DAOForkSupport:        false,
 			TangerineWhistleBlock: new(big.Int),
 			SpuriousDragonBlock:   new(big.Int),
 		},
