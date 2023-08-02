@@ -20,6 +20,8 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/ledgerwatch/erigon/dataflow"
+	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_helpers"
+	"github.com/ledgerwatch/erigon/turbo/engineapi/engine_types"
 	"github.com/ledgerwatch/erigon/turbo/services"
 
 	"github.com/ledgerwatch/erigon/common"
@@ -30,7 +32,6 @@ import (
 	"github.com/ledgerwatch/erigon/eth/stagedsync/stages"
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/rlp"
-	"github.com/ledgerwatch/erigon/turbo/engineapi"
 )
 
 const POSPandaBanner = `
@@ -237,6 +238,12 @@ func (hd *HeaderDownload) LogAnchorState() {
 	hd.lock.RLock()
 	defer hd.lock.RUnlock()
 	hd.logAnchorState()
+}
+
+func (hd *HeaderDownload) Engine() consensus.Engine {
+	hd.lock.RLock()
+	defer hd.lock.RUnlock()
+	return hd.engine
 }
 
 func (hd *HeaderDownload) logAnchorState() {
@@ -709,7 +716,7 @@ func (hd *HeaderDownload) ProcessHeadersPOS(csHeaders []ChainSegmentHeader, tx k
 			}
 			hd.posAnchor = nil
 			hd.posStatus = Synced
-			hd.BeaconRequestList.Interrupt(engineapi.Synced)
+			hd.BeaconRequestList.Interrupt(engine_helpers.Synced)
 			// Wake up stage loop if it is outside any of the stages
 			select {
 			case hd.DeliveryNotify <- struct{}{}:
@@ -1162,25 +1169,25 @@ func (hd *HeaderDownload) ClearPendingPayloadHash() {
 	hd.pendingPayloadHash = libcommon.Hash{}
 }
 
-func (hd *HeaderDownload) GetPendingPayloadStatus() *engineapi.PayloadStatus {
+func (hd *HeaderDownload) GetPendingPayloadStatus() *engine_types.PayloadStatus {
 	hd.lock.RLock()
 	defer hd.lock.RUnlock()
 	return hd.pendingPayloadStatus
 }
 
-func (hd *HeaderDownload) SetPendingPayloadStatus(response *engineapi.PayloadStatus) {
+func (hd *HeaderDownload) SetPendingPayloadStatus(response *engine_types.PayloadStatus) {
 	hd.lock.Lock()
 	defer hd.lock.Unlock()
 	hd.pendingPayloadStatus = response
 }
 
-func (hd *HeaderDownload) GetUnsettledForkChoice() (*engineapi.ForkChoiceMessage, uint64) {
+func (hd *HeaderDownload) GetUnsettledForkChoice() (*engine_types.ForkChoiceState, uint64) {
 	hd.lock.RLock()
 	defer hd.lock.RUnlock()
 	return hd.unsettledForkChoice, hd.unsettledHeadHeight
 }
 
-func (hd *HeaderDownload) SetUnsettledForkChoice(forkChoice *engineapi.ForkChoiceMessage, headHeight uint64) {
+func (hd *HeaderDownload) SetUnsettledForkChoice(forkChoice *engine_types.ForkChoiceState, headHeight uint64) {
 	hd.lock.Lock()
 	defer hd.lock.Unlock()
 	hd.unsettledForkChoice = forkChoice
@@ -1320,7 +1327,7 @@ func (hd *HeaderDownload) StartPoSDownloader(
 				hd.lock.Lock()
 				hd.cleanUpPoSDownload()
 				hd.lock.Unlock()
-				hd.BeaconRequestList.Interrupt(engineapi.Stopping)
+				hd.BeaconRequestList.Interrupt(engine_helpers.Stopping)
 				return
 			case <-logEvery.C:
 				if hd.PosStatus() == Syncing {

@@ -731,7 +731,17 @@ var (
 	// WithoutHeimdallFlag no heimdall (for testing purpose)
 	WithoutHeimdallFlag = cli.BoolFlag{
 		Name:  "bor.withoutheimdall",
-		Usage: "Run without Heimdall service (for testing purpose)",
+		Usage: "Run without Heimdall service (for testing purposes)",
+	}
+
+	BorBlockPeriodFlag = cli.BoolFlag{
+		Name:  "bor.period",
+		Usage: "Override the bor block period (for testing purposes)",
+	}
+
+	BorBlockSizeFlag = cli.BoolFlag{
+		Name:  "bor.minblocksize",
+		Usage: "Ignore the bor block period and wait for 'blocksize' transactions (for testing purposes)",
 	}
 
 	// HeimdallgRPCAddressFlag flag for heimdall gRPC address
@@ -770,6 +780,12 @@ var (
 		Name:  "sentinel.port",
 		Usage: "Port for sentinel",
 		Value: 7777,
+	}
+
+	OtsSearchMaxCapFlag = cli.Uint64Flag{
+		Name:  "ots.search.max.pagesize",
+		Usage: "Max allowed page size for search methods",
+		Value: 25,
 	}
 )
 
@@ -1049,11 +1065,13 @@ func setEtherbase(ctx *cli.Context, cfg *ethconfig.Config) {
 		}
 	}
 
-	if ctx.String(ChainFlag.Name) == networkname.DevChainName || ctx.String(ChainFlag.Name) == networkname.BorDevnetChainName {
+	if chainName := ctx.String(ChainFlag.Name); chainName == networkname.DevChainName || chainName == networkname.BorDevnetChainName {
 		if etherbase == "" {
-			cfg.Miner.SigKey = core.DevnetSignPrivateKey
 			cfg.Miner.Etherbase = core.DevnetEtherbase
 		}
+
+		cfg.Miner.SigKey = core.DevnetSignKey(cfg.Miner.Etherbase)
+
 		setSigKey(ctx, cfg)
 	}
 
@@ -1580,7 +1598,6 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 	if ctx.IsSet(InternalConsensusFlag.Name) && clparams.EmbeddedEnabledByDefault(cfg.NetworkID) {
 		cfg.InternalCL = ctx.Bool(InternalConsensusFlag.Name)
 	}
-	nodeConfig.Http.InternalCL = cfg.InternalCL
 
 	if ctx.IsSet(SentryDropUselessPeers.Name) {
 		cfg.DropUselessPeers = ctx.Bool(SentryDropUselessPeers.Name)

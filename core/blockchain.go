@@ -27,6 +27,7 @@ import (
 
 	"github.com/ledgerwatch/erigon-lib/chain"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
+	"github.com/ledgerwatch/erigon-lib/common/fixedgas"
 
 	"github.com/ledgerwatch/erigon/common/math"
 	"github.com/ledgerwatch/erigon/common/u256"
@@ -37,6 +38,7 @@ import (
 	"github.com/ledgerwatch/erigon/core/vm"
 	"github.com/ledgerwatch/erigon/core/vm/evmtypes"
 	"github.com/ledgerwatch/erigon/rlp"
+	"github.com/ledgerwatch/log/v3"
 )
 
 var (
@@ -77,6 +79,7 @@ func ExecuteBlockEphemerally(
 	engine consensus.Engine, block *types.Block,
 	stateReader state.StateReader, stateWriter state.WriterWithChangeSets,
 	chainReader consensus.ChainHeaderReader, getTracer func(txIndex int, txHash libcommon.Hash) (vm.EVMLogger, error),
+	logger log.Logger,
 ) (*EphemeralExecResult, error) {
 
 	defer BlockExecutionTimer.UpdateDuration(time.Now())
@@ -85,9 +88,9 @@ func ExecuteBlockEphemerally(
 	header := block.Header()
 
 	usedGas := new(uint64)
-	usedDataGas := new(uint64)
+	usedBlobGas := new(uint64)
 	gp := new(GasPool)
-	gp.AddGas(block.GasLimit()).AddDataGas(chain.MaxDataGasPerBlock)
+	gp.AddGas(block.GasLimit()).AddBlobGas(fixedgas.MaxBlobGasPerBlock)
 
 	var (
 		rejectedTxs []*RejectedTx
@@ -117,7 +120,7 @@ func ExecuteBlockEphemerally(
 			vmConfig.Tracer = tracer
 			writeTrace = true
 		}
-		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, usedDataGas, *vmConfig)
+		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, usedBlobGas, *vmConfig)
 		if writeTrace {
 			if ftracer, ok := vmConfig.Tracer.(vm.FlushableTracer); ok {
 				ftracer.Flush(tx)
@@ -147,8 +150,8 @@ func ExecuteBlockEphemerally(
 		return nil, fmt.Errorf("gas used by execution: %d, in header: %d", *usedGas, header.GasUsed)
 	}
 
-	if header.DataGasUsed != nil && *usedDataGas != *header.DataGasUsed {
-		return nil, fmt.Errorf("data gas used by execution: %d, in header: %d", *usedDataGas, *header.DataGasUsed)
+	if header.BlobGasUsed != nil && *usedBlobGas != *header.BlobGasUsed {
+		return nil, fmt.Errorf("blob gas used by execution: %d, in header: %d", *usedBlobGas, *header.BlobGasUsed)
 	}
 
 	var bloom types.Bloom
@@ -160,7 +163,7 @@ func ExecuteBlockEphemerally(
 	}
 	if !vmConfig.ReadOnly {
 		txs := block.Transactions()
-		if _, _, _, err := FinalizeBlockExecution(engine, stateReader, block.Header(), txs, block.Uncles(), stateWriter, chainConfig, ibs, receipts, block.Withdrawals(), chainReader, false); err != nil {
+		if _, _, _, err := FinalizeBlockExecution(engine, stateReader, block.Header(), txs, block.Uncles(), stateWriter, chainConfig, ibs, receipts, block.Withdrawals(), chainReader, false, logger); err != nil {
 			return nil, err
 		}
 	}
@@ -220,7 +223,7 @@ func SysCallContract(contract libcommon.Address, data []byte, chainConfig *chain
 		nil, nil,
 		data, nil, false,
 		true, // isFree
-		nil,  // maxFeePerDataGas
+		nil,  // maxFeePerBlobGas
 	)
 	vmConfig := vm.Config{NoReceipts: true, RestoreState: constCall}
 	// Create a new context to be used in the EVM environment
@@ -264,7 +267,7 @@ func SysCreate(contract libcommon.Address, data []byte, chainConfig chain.Config
 		nil, nil,
 		data, nil, false,
 		true, // isFree
-		nil,  // maxFeePerDataGas
+		nil,  // maxFeePerBlobGas
 	)
 	vmConfig := vm.Config{NoReceipts: true}
 	// Create a new context to be used in the EVM environment
@@ -283,35 +286,6 @@ func SysCreate(contract libcommon.Address, data []byte, chainConfig chain.Config
 	return ret, err
 }
 
-func CallContract(contract libcommon.Address, data []byte, chainConfig chain.Config, ibs *state.IntraBlockState, header *types.Header, engine consensus.Engine) (result []byte, err error) {
-	gp := new(GasPool)
-	gp.AddGas(50_000_000)
-	var gasUsed uint64
-	var gasDataUsed uint64
-	if chainConfig.DAOForkSupport && chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
-		misc.ApplyDAOHardFork(ibs)
-	}
-	noop := state.NewNoopWriter()
-	tx, err := CallContractTx(contract, data, ibs)
-	if err != nil {
-		return nil, fmt.Errorf("SysCallContract: %w ", err)
-	}
-	vmConfig := vm.Config{NoReceipts: true}
-	_, result, err = ApplyTransaction(&chainConfig, GetHashFn(header, nil), engine, &state.SystemAddress, gp, ibs, noop, header, tx, &gasUsed, &gasDataUsed, vmConfig)
-	if err != nil {
-		return result, fmt.Errorf("SysCallContract: %w ", err)
-	}
-	return result, nil
-}
-
-// from the null sender, with 50M gas.
-func CallContractTx(contract libcommon.Address, data []byte, ibs *state.IntraBlockState) (tx types.Transaction, err error) {
-	from := libcommon.Address{}
-	nonce := ibs.GetNonce(from)
-	tx = types.NewTransaction(nonce, contract, u256.Num0, 50_000_000, u256.Num0, data)
-	return tx.FakeSign(from)
-}
-
 func FinalizeBlockExecution(
 	engine consensus.Engine, stateReader state.StateReader,
 	header *types.Header, txs types.Transactions, uncles []*types.Header,
@@ -319,14 +293,15 @@ func FinalizeBlockExecution(
 	ibs *state.IntraBlockState, receipts types.Receipts,
 	withdrawals []*types.Withdrawal, headerReader consensus.ChainHeaderReader,
 	isMining bool,
+	logger log.Logger,
 ) (newBlock *types.Block, newTxs types.Transactions, newReceipt types.Receipts, err error) {
 	syscall := func(contract libcommon.Address, data []byte) ([]byte, error) {
 		return SysCallContract(contract, data, cc, ibs, header, engine, false /* constCall */)
 	}
 	if isMining {
-		newBlock, newTxs, newReceipt, err = engine.FinalizeAndAssemble(cc, header, ibs, txs, uncles, receipts, withdrawals, headerReader, syscall, nil)
+		newBlock, newTxs, newReceipt, err = engine.FinalizeAndAssemble(cc, header, ibs, txs, uncles, receipts, withdrawals, headerReader, syscall, nil, logger)
 	} else {
-		_, _, err = engine.Finalize(cc, header, ibs, txs, uncles, receipts, withdrawals, headerReader, syscall)
+		_, _, err = engine.Finalize(cc, header, ibs, txs, uncles, receipts, withdrawals, headerReader, syscall, logger)
 	}
 	if err != nil {
 		return nil, nil, nil, err
