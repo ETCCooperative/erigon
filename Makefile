@@ -153,7 +153,7 @@ test-integration:
 
 ## test-classic:                  run ETC (integration) tests with a 30m timeout
 test-classic:
-	$(CGO_CFLAGS) GODEBUG=cgocheck=0 $(GO) test $(GO_FLAGS) ./tests/... -p 1 -v --timeout 30m -tags $(BUILD_TAGS),integration -run State_Classic
+	CGO_CFLAGS="$(CGO_CFLAGS)" GODEBUG=cgocheck=0 $(GO) test $(GO_FLAGS) ./tests/... -p 1 -v --timeout 30m -tags $(BUILD_TAGS),integration -run State_Classic
 
 test3-integration:
 	$(GOTEST) --timeout 30m -tags $(BUILD_TAGS),integration,e3
