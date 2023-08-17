@@ -6,9 +6,8 @@ import (
 	"time"
 
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
-	"github.com/ledgerwatch/erigon/cl/clpersist"
+	"github.com/ledgerwatch/erigon/cl/persistence"
 	"github.com/ledgerwatch/erigon/cl/phase1/network"
-	"github.com/spf13/afero"
 
 	"github.com/ledgerwatch/erigon/cl/clparams"
 	"github.com/ledgerwatch/erigon/cl/cltypes"
@@ -23,13 +22,13 @@ type StageHistoryReconstructionCfg struct {
 	startingSlot      uint64
 	backFillingAmount uint64
 	tmpdir            string
-	dataDirFs         afero.Fs
+	db                persistence.BeaconChainDatabase
 	logger            log.Logger
 }
 
 const logIntervalTime = 30 * time.Second
 
-func StageHistoryReconstruction(downloader *network.BackwardBeaconDownloader, dataDirFs afero.Fs, genesisCfg *clparams.GenesisConfig, beaconCfg *clparams.BeaconChainConfig, backFillingAmount uint64, startingRoot libcommon.Hash, startinSlot uint64, tmpdir string, logger log.Logger) StageHistoryReconstructionCfg {
+func StageHistoryReconstruction(downloader *network.BackwardBeaconDownloader, db persistence.BeaconChainDatabase, genesisCfg *clparams.GenesisConfig, beaconCfg *clparams.BeaconChainConfig, backFillingAmount uint64, startingRoot libcommon.Hash, startinSlot uint64, tmpdir string, logger log.Logger) StageHistoryReconstructionCfg {
 	return StageHistoryReconstructionCfg{
 		genesisCfg:        genesisCfg,
 		beaconCfg:         beaconCfg,
@@ -39,13 +38,12 @@ func StageHistoryReconstruction(downloader *network.BackwardBeaconDownloader, da
 		startingSlot:      startinSlot,
 		logger:            logger,
 		backFillingAmount: backFillingAmount,
-		dataDirFs:         dataDirFs,
+		db:                db,
 	}
 }
 
 // SpawnStageBeaconsForward spawn the beacon forward stage
 func SpawnStageHistoryDownload(cfg StageHistoryReconstructionCfg, ctx context.Context, logger log.Logger) error {
-
 	blockRoot := cfg.startingRoot
 	destinationSlot := uint64(0)
 	currentSlot := cfg.startingSlot
@@ -58,13 +56,12 @@ func SpawnStageHistoryDownload(cfg StageHistoryReconstructionCfg, ctx context.Co
 	// Setup slot and block root
 	cfg.downloader.SetSlotToDownload(currentSlot)
 	cfg.downloader.SetExpectedRoot(blockRoot)
-	foundLatestEth1ValidHash := false
+	foundLatestEth1ValidHash := true
 
-	fs := afero.NewBasePathFs(cfg.dataDirFs, "caplin/beacon")
 	// Set up onNewBlock callback
 	cfg.downloader.SetOnNewBlock(func(blk *cltypes.SignedBeaconBlock) (finished bool, err error) {
 		slot := blk.Block.Slot
-		return slot <= destinationSlot && foundLatestEth1ValidHash, clpersist.SaveBlockWithConfig(fs, blk, cfg.beaconCfg)
+		return slot <= destinationSlot && foundLatestEth1ValidHash, cfg.db.WriteBlock(blk)
 	})
 	prevProgress := cfg.downloader.Progress()
 
