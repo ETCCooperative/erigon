@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ledgerwatch/erigon/consensus/misc"
 	"github.com/ledgerwatch/erigon/metrics"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/exp/slices"
@@ -105,7 +106,7 @@ func ExecuteBlockEphemerally(
 	}
 
 	noop := state.NewNoopWriter()
-	//fmt.Printf("====txs processing start: %d====\n", block.NumberU64())
+	// fmt.Printf("====txs processing start: %d====\n", block.NumberU64())
 	for i, tx := range block.Transactions() {
 		ibs.SetTxContext(tx.Hash(), block.Hash(), i)
 		writeTrace := false
