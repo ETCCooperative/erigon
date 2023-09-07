@@ -69,7 +69,8 @@ func TestCreation_Classic(t *testing.T) {
 	}
 	for i, tt := range tests {
 		for j, ttt := range tt.cases {
-			if have := NewID(tt.config, tt.genesis, ttt.head, 0); have != ttt.want {
+			heightForks, timeForks := GatherForks(tt.config, 0)
+			if have := NewIDFromForks(heightForks, timeForks, tt.genesis, ttt.head, 0); have != ttt.want {
 				t.Errorf("test %d, case %d: fork ID mismatch: have %x, want %x", i, j, have, ttt.want)
 			}
 		}
@@ -102,7 +103,7 @@ func TestGatherForks(t *testing.T) {
 		return false
 	}
 	for _, c := range cases {
-		gotForkNs, _ := GatherForks(c.config)
+		gotForkNs, _ := GatherForks(c.config, 0)
 		if len(gotForkNs) != len(c.wantNs) {
 			for _, n := range c.wantNs {
 				if !sliceContains(gotForkNs, n) {
