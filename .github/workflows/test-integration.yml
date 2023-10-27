@@ -2,7 +2,7 @@ name: Integration tests
 on:
   push:
     branches:
-      - devel
+      - 'devel\+classic'
       - alpha
       - 'release/**'
   schedule:

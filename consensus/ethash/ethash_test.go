@@ -49,7 +49,7 @@ func TestRemoteSealer(t *testing.T) {
 		err  error
 	)
 	if work, err = api.GetWork(); err != nil || work[0] != sealhash.Hex() {
-		t.Error("expect to return a mining work has same hash")
+		t.Errorf("expect to return a mining work has same hash, got: %s, want: %s", work[0], sealhash.Hex())
 	}
 
 	if res := api.SubmitWork(types.BlockNonce{}, sealhash, libcommon.Hash{}); res {

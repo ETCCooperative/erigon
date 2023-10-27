@@ -58,8 +58,15 @@ func VerifyDAOHeaderExtraData(config *chain.Config, header *types.Header) error 
 	if header.Number.Cmp(config.DAOForkBlock) < 0 || header.Number.Cmp(limit) >= 0 {
 		return nil
 	}
-	if !bytes.Equal(header.Extra, params.DAOForkBlockExtra) {
-		return ErrBadProDAOExtra
+	// Depending on whether we support or oppose the fork, validate the extra-data contents
+	if config.DAOForkSupport {
+		if !bytes.Equal(header.Extra, params.DAOForkBlockExtra) {
+			return ErrBadProDAOExtra
+		}
+	} else {
+		if bytes.Equal(header.Extra, params.DAOForkBlockExtra) {
+			return ErrBadNoDAOExtra
+		}
 	}
 	// All ok, header has the same extra-data we expect
 	return nil

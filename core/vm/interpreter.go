@@ -132,6 +132,8 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 		jt = &shanghaiInstructionSet
 	case evm.ChainRules().IsLondon:
 		jt = &londonInstructionSet
+	case evm.ChainRules().IsMystique:
+		jt = &eip3529InstructionSet
 	case evm.ChainRules().IsBerlin:
 		jt = &berlinInstructionSet
 	case evm.ChainRules().IsIstanbul:
@@ -140,7 +142,7 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 		jt = &constantinopleInstructionSet
 	case evm.ChainRules().IsByzantium:
 		jt = &byzantiumInstructionSet
-	case evm.ChainRules().IsSpuriousDragon:
+	case evm.ChainRules().IsSpuriousDragon || evm.ChainRules().IsDieHard:
 		jt = &spuriousDragonInstructionSet
 	case evm.ChainRules().IsTangerineWhistle:
 		jt = &tangerineWhistleInstructionSet

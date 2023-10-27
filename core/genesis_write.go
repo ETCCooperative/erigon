@@ -158,6 +158,18 @@ func WriteGenesisBlock(tx kv.RwTx, genesis *types.Genesis, overrideCancunTime *b
 		}
 		return newCfg, storedBlock, nil
 	}
+
+	// Special case: differentiate ETH vs. ETC configs.
+	// This is needed because ETC has the same genesis block as ETH.
+	if newCfg.ChainID.Cmp(params.MainnetChainConfig.ChainID) == 0 &&
+		storedCfg.ChainID.Cmp(params.ClassicChainConfig.ChainID) == 0 {
+		newCfg = params.ClassicChainConfig
+		applyOverrides(newCfg)
+		if err := newCfg.CheckConfigForkOrder(); err != nil {
+			return newCfg, nil, err
+		}
+	}
+
 	// Special case: don't change the existing config of a private chain if no new
 	// config is supplied. This is useful, for example, to preserve DB config created by erigon init.
 	// In that case, only apply the overrides.
@@ -657,6 +669,8 @@ func GenesisBlockByChainName(chain string) *types.Genesis {
 		return GnosisGenesisBlock()
 	case networkname.ChiadoChainName:
 		return ChiadoGenesisBlock()
+	case networkname.ClassicChainName:
+		return ClassicGenesisBlock()
 	default:
 		return nil
 	}

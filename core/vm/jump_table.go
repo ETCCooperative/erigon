@@ -60,6 +60,7 @@ var (
 	istanbulInstructionSet         = newIstanbulInstructionSet()
 	berlinInstructionSet           = newBerlinInstructionSet()
 	londonInstructionSet           = newLondonInstructionSet()
+	eip3529InstructionSet          = newEIP3529InstructionSet()
 	shanghaiInstructionSet         = newShanghaiInstructionSet()
 	cancunInstructionSet           = newCancunInstructionSet()
 	pragueInstructionSet           = newPragueInstructionSet()
@@ -126,6 +127,14 @@ func newLondonInstructionSet() JumpTable {
 	enable3529(&instructionSet) // Reduction in refunds https://eips.ethereum.org/EIPS/eip-3529
 	enable3198(&instructionSet) // Base fee opcode https://eips.ethereum.org/EIPS/eip-3198
 	validateAndFillMaxStack(&instructionSet)
+	return instructionSet
+}
+
+// newEIP3529InstructionSet returns the frontier, homestead, byzantium,
+// constantinople, istanbul, petersburg, berlin, and ~~london~~ 3529 instructions.
+func newEIP3529InstructionSet() JumpTable {
+	instructionSet := newBerlinInstructionSet()
+	enable3529(&instructionSet) // Reduction in refunds https://eips.ethereum.org/EIPS/eip-3529
 	return instructionSet
 }
 

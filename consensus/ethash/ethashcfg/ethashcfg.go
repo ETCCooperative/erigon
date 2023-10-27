@@ -19,6 +19,8 @@ type Config struct {
 	NotifyFull bool
 
 	Log log.Logger `toml:"-"`
+
+	ECIP1099Block *uint64 `toml:"-"`
 }
 
 // Mode defines the type and amount of PoW verification an ethash engine makes.

@@ -24,8 +24,7 @@ CGO_CFLAGS += -DMDBX_FORCE_ASSERTIONS=0 # Enable MDBX's asserts by default in 'd
 #CGO_CFLAGS += -DMDBX_ENV_CHECKPID=0 # Erigon doesn't do fork() syscall
 CGO_CFLAGS += -O
 CGO_CFLAGS += -D__BLST_PORTABLE__
-CGO_CFLAGS += -Wno-unknown-warning-option -Wno-enum-int-mismatch -Wno-strict-prototypes
-#CGO_CFLAGS += -Wno-error=strict-prototypes # for Clang15, remove it when can https://github.com/ledgerwatch/erigon/issues/6113#issuecomment-1359526277
+CGO_CFLAGS += -Wno-unknown-warning-option -Wno-enum-int-mismatch -Wno-strict-prototypes -Wno-unused-but-set-variable
 
 # about netgo see: https://github.com/golang/go/issues/30310#issuecomment-471669125 and https://github.com/golang/go/issues/57757
 BUILD_TAGS = nosqlite,noboltdb
@@ -154,6 +153,10 @@ test3:
 test-integration:
 	@cd erigon-lib && $(MAKE) test
 	$(GOTEST) --timeout 240m -tags $(BUILD_TAGS),integration
+
+## test-classic:                  run ETC (integration) tests with a 30m timeout
+test-classic:
+	CGO_CFLAGS="$(CGO_CFLAGS)" GODEBUG=cgocheck=0 $(GO) test $(GO_FLAGS) ./tests/... -p 1 -v --timeout 30m -tags $(BUILD_TAGS),integration -run State_Classic
 
 test3-integration:
 	@cd erigon-lib && $(MAKE) test

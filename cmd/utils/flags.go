@@ -1613,6 +1613,16 @@ func SetEthConfig(ctx *cli.Context, nodeConfig *nodecfg.Config, cfg *ethconfig.C
 			cfg.NetworkID = params.NetworkIDByChainName(chain)
 		}
 		SetDNSDiscoveryDefaults(cfg, *genesisHash)
+	case networkname.ClassicChainName:
+		log.Warn("SetEthConfig", "chain", chain)
+		cfg.Genesis = core.GenesisBlockByChainName(networkname.ClassicChainName)
+
+		if !ctx.IsSet(NetworkIdFlag.Name) {
+			cfg.NetworkID = params.NetworkIDByChainName(chain)
+		}
+
+		cfg.EthDiscoveryURLs = []string{params.ClassicDNS}
+		cfg.Ethash.ECIP1099Block = cfg.Genesis.Config.ECIP1099ForkBlockUint64()
 	case "":
 		if cfg.NetworkID == 1 {
 			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
@@ -1657,6 +1667,7 @@ func SetDNSDiscoveryDefaults(cfg *ethconfig.Config, genesis libcommon.Hash) {
 	if cfg.EthDiscoveryURLs != nil {
 		return // already set through flags/config
 	}
+
 	protocol := "all"
 	if url := params.KnownDNSNetwork(genesis, protocol); url != "" {
 		cfg.EthDiscoveryURLs = []string{url}

@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -449,7 +450,7 @@ func runPeer(
 				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] GetNodeData", peerID))
+			// log.Info(fmt.Sprintf("[%s] GetNodeData", peerID))
 		case eth.GetReceiptsMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -459,7 +460,7 @@ func runPeer(
 				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] GetReceiptsMsg", peerID))
+			// log.Info(fmt.Sprintf("[%s] GetReceiptsMsg", peerID))
 		case eth.ReceiptsMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -469,7 +470,7 @@ func runPeer(
 				logger.Error(fmt.Sprintf("%s: reading msg into bytes: %v", peerID, err))
 			}
 			send(eth.ToProto[protocol][msg.Code], peerID, b)
-			//log.Info(fmt.Sprintf("[%s] ReceiptsMsg", peerID))
+			// log.Info(fmt.Sprintf("[%s] ReceiptsMsg", peerID))
 		case eth.NewBlockHashesMsg:
 			if !hasSubscribers(eth.ToProto[protocol][msg.Code]) {
 				continue
@@ -771,7 +772,7 @@ func (ss *GrpcServer) getBlockHeaders(ctx context.Context, bestHash libcommon.Ha
 }
 
 func (ss *GrpcServer) PenalizePeer(_ context.Context, req *proto_sentry.PenalizePeerRequest) (*emptypb.Empty, error) {
-	//log.Warn("Received penalty", "kind", req.GetPenalty().Descriptor().FullName, "from", fmt.Sprintf("%s", req.GetPeerId()))
+	// log.Warn("Received penalty", "kind", req.GetPenalty().Descriptor().FullName, "from", fmt.Sprintf("%s", req.GetPeerId()))
 	peerID := ConvertH512ToPeerID(req.PeerId)
 	peerInfo := ss.getPeer(peerID)
 	if ss.statusData != nil && peerInfo != nil && !peerInfo.peer.Info().Network.Static && !peerInfo.peer.Info().Network.Trusted {
@@ -797,7 +798,7 @@ func (ss *GrpcServer) findBestPeersWithPermit(peerCount int) []*PeerInfo {
 	ss.rangePeers(func(peerInfo *PeerInfo) bool {
 		deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
 		height := peerInfo.Height()
-		//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
+		// fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
 		if deadlines < maxPermitsPerPeer {
 			heap.Push(&byMinBlock, PeerRef{pi: peerInfo, height: height})
 			if byMinBlock.Len() > peerCount {
@@ -833,7 +834,7 @@ func (ss *GrpcServer) findPeerByMinBlock(minBlock uint64) (*PeerInfo, bool) {
 	ss.rangePeers(func(peerInfo *PeerInfo) bool {
 		if peerInfo.Height() >= minBlock {
 			deadlines := peerInfo.ClearDeadlines(now, false /* givePermit */)
-			//fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
+			// fmt.Printf("%d deadlines for peer %s\n", deadlines, peerID)
 			if deadlines < maxPermitsPerPeer {
 				permits := maxPermitsPerPeer - deadlines
 				if permits > maxPermits {
@@ -889,8 +890,8 @@ func (ss *GrpcServer) SendMessageById(_ context.Context, inreq *proto_sentry.Sen
 	peerID := ConvertH512ToPeerID(inreq.PeerId)
 	peerInfo := ss.getPeer(peerID)
 	if peerInfo == nil {
-		//TODO: enable after support peer to sentry mapping
-		//return reply, fmt.Errorf("peer not found: %s", peerID)
+		// TODO: enable after support peer to sentry mapping
+		// return reply, fmt.Errorf("peer not found: %s", peerID)
 		return reply, nil
 	}
 
@@ -980,6 +981,17 @@ func (ss *GrpcServer) SetStatus(ctx context.Context, statusData *proto_sentry.St
 			if len(ss.discoveryDNS) == 0 {
 				if url := params.KnownDNSNetwork(genesisHash, "all"); url != "" {
 					ss.discoveryDNS = []string{url}
+				}
+				if libcommon.BytesToHash(genesisHash[:]) == params.MainnetGenesisHash {
+					// Byzantium block is expected to be unique compared to the ETH config.
+					for _, f := range statusData.ForkData.HeightForks {
+						if f == params.ClassicChainConfig.ByzantiumBlock.Uint64() {
+							ss.discoveryDNS = []string{params.ClassicDNS}
+							logDNS := strings.Join(ss.discoveryDNS, ",")
+							log.Info("Using classic DNS discovery", "url", logDNS)
+							break
+						}
+					}
 				}
 			}
 			for _, p := range ss.Protocols {

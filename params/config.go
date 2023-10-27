@@ -211,6 +211,8 @@ func ChainConfigByChainName(chain string) *chain.Config {
 		return GnosisChainConfig
 	case networkname.ChiadoChainName:
 		return ChiadoChainConfig
+	case networkname.ClassicChainName:
+		return ClassicChainConfig
 	default:
 		return nil
 	}
@@ -218,7 +220,7 @@ func ChainConfigByChainName(chain string) *chain.Config {
 
 func GenesisHashByChainName(chain string) *libcommon.Hash {
 	switch chain {
-	case networkname.MainnetChainName:
+	case networkname.MainnetChainName, networkname.ClassicChainName:
 		return &MainnetGenesisHash
 	case networkname.HoleskyChainName:
 		return &HoleskyGenesisHash
@@ -270,6 +272,8 @@ func NetworkIDByChainName(chain string) uint64 {
 	switch chain {
 	case networkname.DevChainName:
 		return 1337
+	case networkname.ClassicChainName:
+		return 1
 	default:
 		config := ChainConfigByChainName(chain)
 		if config == nil {

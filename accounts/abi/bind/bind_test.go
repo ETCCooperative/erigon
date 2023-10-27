@@ -1848,6 +1848,19 @@ func TestGolangBindings(t *testing.T) {
 		t.Fatalf("failed to replace binding test dependency to current source tree: %v\n%s", err, out)
 	}
 
+	// <<EOETC
+	// Ethereum Classic
+	// Replace ledgerwatch/erigon-lib with etccooperative/erigon-lib.
+	// This replacement is a permanent replacement.
+	// It is needed because erigon-lib defines chain configuration data types and methods (in <root>/chain/),
+	// and we need those modifications in order for erigon to be able to support ETC.
+	replacer = exec.Command(gocmd, "mod", "edit", "-replace", "github.com/ledgerwatch/erigon-lib=github.com/etccooperative/erigon-lib@v0.0.0-20230116172219-52226a40dbb8")
+	replacer.Dir = pkg
+	if out, err := replacer.CombinedOutput(); err != nil {
+		t.Fatalf("failed to replace binding test dependency ledgerwatch/erigon-lib => etccooperative/erigon-lib: %v\n%s", err, out)
+	}
+	// EOETC
+
 	replacer = exec.Command(gocmd, "mod", "edit", "-x", "-require", "github.com/tendermint/tendermint@v0.0.0", "-replace", "github.com/tendermint/tendermint=github.com/bnb-chain/tendermint@v0.31.12") // Repo root
 	replacer.Dir = pkg
 	if out, err := replacer.CombinedOutput(); err != nil {

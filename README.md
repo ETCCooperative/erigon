@@ -1,12 +1,14 @@
-# Erigon
+# Erigon +ETC 
 
 Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency
 frontier. [Archive Node](https://ethereum.org/en/developers/docs/nodes-and-clients/archive-nodes/#what-is-an-archive-node)
 by default.
 
-![Build status](https://github.com/ledgerwatch/erigon/actions/workflows/ci.yml/badge.svg)
+The upstream README has been relocated [here](./README.ledgerwatch.md).
+See that document for more information about the project, including
+build and usage instructions.
 
-![Coverage](https://gist.githubusercontent.com/revitteth/ee38e9beb22353eef6b88f2ad6ed7aa9/raw/badge.svg)
+## Running
 
 <!--ts-->
 
@@ -84,32 +86,35 @@ make erigon
 ./build/bin/erigon
 ```
 
-You can check [the list of releases](https://github.com/ledgerwatch/erigon/releases) for release notes.
+Chain data is located by default in `~/.local/share/erigon/classic/`.\
+Ethash/Etchash DAGs are located by default in `~/.local/share/erigon/classic/ethash-dags/`.
 
-For building the bleeding edge development branch:
+With the default sync mode, ETC requires around 125GB of space as of January 23, 2023 (block ~16.81M). 
 
-```sh
-git clone --recurse-submodules https://github.com/ledgerwatch/erigon.git
-cd erigon
-git checkout devel
-make erigon
-./build/bin/erigon
+### Docker
+
+To run `erigon` with Docker use the following.
+
+```bash
+DOCKER_BUILDKIT=1 docker build -t erigon .
+docker run -p 30303:30303 [more options] erigon erigon --chain classic [more options]
 ```
 
 Default `--snapshots` for `mainnet`, `goerli`, `gnosis`, `chiado`. Other networks now have default `--snapshots=false`.
 Increase
 download speed by flag `--torrent.download.rate=20mb`. <code>🔬 See [Downloader docs](./cmd/downloader/readme.md)</code>
 
-Use `--datadir` to choose where to store data.
+The Ethereum Classic chain configuration is defined in [./params/chainspecs/classic.json](./params/chainspecs/classic.json).
 
 Use `--chain=gnosis` for [Gnosis Chain](https://www.gnosis.io/), `--chain=bor-mainnet` for Polygon Mainnet,
 and `--chain=mumbai` for Polygon Mumbai.
 For Gnosis Chain you need a [Consensus Layer](#beacon-chain-consensus-layer) client alongside
 Erigon (https://docs.gnosischain.com/node/guide/beacon).
 
-Running `make help` will list and describe the convenience commands available in the [Makefile](./Makefile).
+### Upstream Maintenance
 
-### Datadir structure
+To maintain this branch, we periodically merge the upstream `devel` branch into `devel+classic`.
+This has been automated by a GitHub Action, which runs nightly.
 
 - chaindata: recent blocks, state, recent state history. low-latency disk recommended.
 - snapshots: old blocks, old state history. can symlink/mount it to cheaper disk. mostly immutable. must have ~100gb

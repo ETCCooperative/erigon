@@ -226,6 +226,9 @@ func GatherForks(config *chain.Config, genesisTime uint64) (heightForks []uint64
 		if field.Type != reflect.TypeOf(new(big.Int)) {
 			continue
 		}
+		if config.IsClassic() && strings.Contains(field.Name, "DAO") {
+			continue
+		}
 		// Extract the fork rule block number and aggregate it
 		rule := conf.Field(i).Interface().(*big.Int)
 		if rule != nil {

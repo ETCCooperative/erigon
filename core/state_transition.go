@@ -419,7 +419,7 @@ func (st *StateTransition) TransitionDb(refunds bool, gasBailout bool) (*Executi
 		ret, st.gas, vmerr = st.evm.Call(sender, st.to(), st.data, st.gas, st.value, bailout)
 	}
 	if refunds {
-		if rules.IsLondon {
+		if rules.IsLondon || rules.IsMystique {
 			// After EIP-3529: refunds are capped to gasUsed / 5
 			st.refundGas(params.RefundQuotientEIP3529)
 		} else {
